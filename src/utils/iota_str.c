@@ -1,5 +1,4 @@
-#include <stdlib.h>
-
+#include "utils/allocator.h"
 #include "utils/iota_str.h"
 
 iota_str_t *iota_str_new(char const s[]) {

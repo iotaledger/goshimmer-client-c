@@ -1,5 +1,5 @@
-#ifndef __UTILS_BIT_MASK_H__
-#define __UTILS_BIT_MASK_H__
+#ifndef __UTILS_BITMASK_H__
+#define __UTILS_BITMASK_H__
 
 #include <stdbool.h>
 #include <stdint.h>

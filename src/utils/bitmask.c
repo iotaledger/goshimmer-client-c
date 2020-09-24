@@ -1,8 +1,8 @@
 #include <inttypes.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
+#include "utils/allocator.h"
 #include "utils/bitmask.h"
 
 bitmask_t* bitmask_new() {

@@ -17,6 +17,7 @@ endif()
 include(cmake/uthash.cmake)
 include(cmake/sodium.cmake)
 include(cmake/base58.cmake)
+include(cmake/cjson.cmake)
 
 if(ENABLED_JEMALLOC)
   include(cmake/jemalloc.cmake)
