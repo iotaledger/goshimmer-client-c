@@ -3,6 +3,18 @@
 
 #include "client/api/get_node_info.h"
 
+void test_get_info() {
+  iota_client_conf_t ctx = {
+      .url = "https://api.goshimmer/",
+      .port = 0  // use default port number
+  };
+  res_node_info_t info;
+
+  int ret = get_node_info(&ctx, &info);
+  TEST_ASSERT_EQUAL_INT(0, ret);
+  // TEST_ASSERT_EQUAL_STRING("v0.2.2", info.version);
+}
+
 void test_deser_node_info() {
   char const* const json_info =
       "{\"version\":\"v0.2.2\",\"synced\":false,\"beacons\":[{\"public_key\":"
@@ -33,6 +45,7 @@ int main() {
   UNITY_BEGIN();
 
   RUN_TEST(test_deser_node_info);
+  // RUN_TEST(test_get_info);
 
   return UNITY_END();
 }
