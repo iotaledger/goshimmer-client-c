@@ -9,11 +9,11 @@ target_sources(
   PRIVATE "core/address.c"
           "core/balance.c"
           "utils/iota_str.c"
-          "utils/bit_mask.c"
+          "utils/bitmask.c"
   PUBLIC "core/address.h"
          "core/balance.h"
          "utils/iota_str.h"
-         "utils/bit_mask.h"
+         "utils/bitmask.h"
 )
 
 target_include_directories(qian_bao PUBLIC "${PROJECT_SOURCE_DIR}/src" "${CMAKE_INSTALL_PREFIX}/include")
