@@ -67,9 +67,26 @@ bool bitmask_get(bitmask_t* mask, uint64_t index) {
   uint64_t byte_index = index / 8;
   uint8_t bit_index = index % 8;
   if (byte_index > mask->cap) {
+    printf("Err[%s:%d] out of range\n", __func__, __LINE__);
     return false;
   }
   return mask->byte[byte_index] & (1 << bit_index);
+}
+
+bitmask_t* bitmask_clone(bitmask_t* b) {
+  bitmask_t* n = malloc(sizeof(bitmask_t));
+  if (!n) {
+    return NULL;
+  }
+
+  n->byte = malloc(b->cap);
+  if (!n->byte) {
+    free(n);
+    return NULL;
+  }
+  n->cap = b->cap;
+  memcpy(n->byte, b->byte, n->cap);
+  return n;
 }
 
 void bitmask_show(bitmask_t* b) {

@@ -48,7 +48,13 @@ void test_bitmask() {
   TEST_ASSERT(bitmask_get(b, 0) == false);
   bitmask_show(b);
 
+  printf("bitmask clone\n");
+  bitmask_t* n = bitmask_clone(b);
+  TEST_ASSERT_EQUAL_MEMORY(n->byte, b->byte, b->cap);
+  bitmask_show(n);
+
   bitmask_free(b);
+  bitmask_free(n);
 }
 
 int main() {

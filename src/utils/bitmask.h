@@ -57,6 +57,14 @@ int bitmask_op(bitmask_t* mask, uint64_t index, bitmask_op_t op);
 bool bitmask_get(bitmask_t* mask, uint64_t index);
 
 /**
+ * @brief Copy a bitmask to a new object.
+ *
+ * @param b A bitmask will be copied
+ * @return bitmask_t* A copied bitmask
+ */
+bitmask_t* bitmask_clone(bitmask_t* b);
+
+/**
  * @brief Release a bitmask object
  *
  * @param b A bitmask object.
