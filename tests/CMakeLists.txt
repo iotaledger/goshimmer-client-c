@@ -15,4 +15,6 @@ test_case_add("client/test_http_client.c" http_client)
 test_case_add("client/test_get_node_info.c" get_node_info)
 test_case_add("client/test_get_funds.c" get_funds)
 
+test_case_add("core/test_address.c" utils_address)
+
 test_case_add("utils/test_bitmask.c" utils_bitmask)

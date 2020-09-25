@@ -7,6 +7,8 @@
 
 #include "core/address.h"
 
+static UT_icd const addr_list_icd = {TANGLE_ADDRESS_BYTES * sizeof(byte_t), NULL, NULL, NULL};
+
 void dump_hex(byte_t const data[], size_t len) {
   for (int i = 0; i < len; i++) {
     printf("0x%x, ", data[i]);
@@ -118,7 +120,7 @@ void address_get(byte_t seed[], uint64_t index, address_version_t version, byte_
 }
 
 bool address_2_base58(byte_t const address[], char str_buf[]) {
-  size_t buf_len = TANGLE_ADDRESS_BASE58_LEN;
+  size_t buf_len = TANGLE_ADDRESS_BASE58_BUF;
   return b58enc(str_buf, &buf_len, (const void *)address, TANGLE_ADDRESS_BYTES);
   // bool ret = b58enc(str_buf, &buf_len, (const void *)address, TANGLE_ADDRESS_BYTES);
   // printf("addr len %ld, %s, ret = %d\n", buf_len, str_buf, ret);
@@ -159,10 +161,16 @@ bool sign_verify_signature(byte_t const seed[], uint64_t index, byte_t signature
   // get ed25519 public and private key from subseed
   crypto_sign_seed_keypair(pub_key, priv_key, subseed);
   if (crypto_sign_open(exp_data, &exp_data_len, signature, ED_SIGNATURE_BYTES + data_len, pub_key) == 0) {
-    printf("data size %lld\n", exp_data_len);
+    // printf("data size %lld\n", exp_data_len);
     return memcmp(data, exp_data, exp_data_len) ? false : true;
   } else {
-    printf("failed\n");
+    printf("[%s:%d] signautre verify failed\n", __func__, __LINE__);
     return false;
   }
+}
+
+addr_list_t *addr_list_new() {
+  addr_list_t *list = NULL;
+  utarray_new(list, &addr_list_icd);
+  return list;
 }

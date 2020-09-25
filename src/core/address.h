@@ -5,11 +5,13 @@
 
 #include "core/types.h"
 #include "sodium.h"
+#include "utarray.h"
 
 // the length of an address (digest length = 32 + version byte length = 1).
 #define TANGLE_ADDRESS_BYTES 33
-#define TANGLE_ADDRESS_BASE58_LEN 48
+#define TANGLE_ADDRESS_BASE58_BUF 48
 #define TANGLE_SEED_BYTES crypto_sign_ed25519_SEEDBYTES
+#define TANGLE_SEED_BASE58_BUF 48
 
 #define ED_PUBLIC_KEY_BYTES crypto_sign_ed25519_PUBLICKEYBYTES
 #define ED_PRIVATE_KEY_BYTES crypto_sign_ed25519_SECRETKEYBYTES
@@ -18,6 +20,15 @@
 
 // address signature version
 typedef enum { ADDRESS_VER_ED25519 = 1, ADDRESS_VER_BLS = 2 } address_version_t;
+
+typedef UT_array addr_list_t;
+
+/**
+ * @brief loops address array
+ *
+ */
+#define ADDR_ARRAY_FOREACH(list, elm) \
+  for (elm = (byte_t *)utarray_front(list); elm != NULL; elm = (byte_t *)utarray_next(list, elm))
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,7 +50,7 @@ void random_seed(byte_t seed[]);
  * @return true
  * @return false
  */
-bool seed_2_base58(byte_t const seed[], char str_buf[], size_t* buf_len);
+bool seed_2_base58(byte_t const seed[], char str_buf[], size_t *buf_len);
 
 /**
  * @brief Gets seed bytes from a human readable seed string.
@@ -66,8 +77,8 @@ void address_get(byte_t seed[], uint64_t index, address_version_t version, byte_
  *
  * @param[in] address An address in bytes
  * @param[out] str_buf A buffer holds string address
- * @return true
- * @return false
+ * @return true on success
+ * @return false on failed
  */
 bool address_2_base58(byte_t const address[], char str_buf[]);
 
@@ -76,8 +87,8 @@ bool address_2_base58(byte_t const address[], char str_buf[]);
  *
  * @param[in] base58_str A base58 string
  * @param[out] addr A buffer holds address
- * @return true
- * @return false
+ * @return true on success
+ * @return false on failed
  */
 bool address_from_base58(char const base58_str[], byte_t addr[]);
 
@@ -100,8 +111,8 @@ void sign_signature(byte_t const seed[], uint64_t index, byte_t const data[], ui
  * @param[in] signature The signature
  * @param[in] data The expected data
  * @param[in] data_len The length of data
- * @return true
- * @return false
+ * @return true on success
+ * @return false on failed
  */
 bool sign_verify_signature(byte_t const seed[], uint64_t index, byte_t signature[], byte_t const data[],
                            size_t data_len);
@@ -113,6 +124,55 @@ bool sign_verify_signature(byte_t const seed[], uint64_t index, byte_t signature
  * @param[in] len The size of the byte array.
  */
 void dump_hex(byte_t const data[], size_t len);
+
+/**
+ * @brief Allocates an address list object.
+ *
+ * @return addr_list_t* a pointer to addr_list_t object
+ */
+addr_list_t *addr_list_new();
+
+/**
+ * @brief Appends an address to the list.
+ *
+ * @param[in] list The address list
+ * @param[in] addr An address to be appended to the list.
+ */
+static void addr_list_push(addr_list_t *list, byte_t const addr[]) { utarray_push_back(list, addr); }
+
+/**
+ * @brief Removes an address from tail.
+ *
+ * @param[in] list The address list
+ */
+static void addr_list_pop(addr_list_t *list) { utarray_pop_back(list); }
+
+/**
+ * @brief Gets address list size
+ *
+ * @param[in] list An addr_list_t object
+ * @return size_t
+ */
+static size_t addr_list_len(addr_list_t *list) { return utarray_len(list); }
+
+/**
+ * @brief Gets an address from list by given index.
+ *
+ * @param[in] list An address list object
+ * @param[in] index The index of the address
+ * @return addr_list_t*
+ */
+static byte_t *addr_list_at(addr_list_t *list, size_t index) {
+  // return NULL if not found.
+  return (byte_t *)utarray_eltptr(list, index);
+}
+
+/**
+ * @brief Frees an address list.
+ *
+ * @param[in] list An address list object.
+ */
+static void addr_list_free(addr_list_t *list) { utarray_free(list); }
 
 #ifdef __cplusplus
 }

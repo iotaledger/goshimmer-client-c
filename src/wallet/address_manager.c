@@ -48,13 +48,14 @@ void am_get_address(wallet_am_t* const am, uint64_t index, wallet_address_t* con
     am_update_spent_address(am, index, true);
     am->last_addr_index = index;
   }
-  // update unspend address index?
+  // update unspent address index?
   if (index > am->last_unspent_idx) {
-    printf("update last unspend index %" PRIu64 " to %" PRIu64 "\n", am->last_unspent_idx, index);
+    printf("update last unspent index %" PRIu64 " to %" PRIu64 "\n", am->last_unspent_idx, index);
     am->last_unspent_idx = index;
   }
 
-  address_get(am->seed, index, ADDRESS_VER_ED25519, out_addr);
+  address_get(am->seed, index, ADDRESS_VER_ED25519, out_addr->addr);
+  out_addr->index = index;
 }
 
 // generates and returns a new unused address.
