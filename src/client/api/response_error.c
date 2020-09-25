@@ -30,22 +30,7 @@ res_err_t *deser_error(cJSON *j_obj) {
     return NULL;
   }
 
-  cJSON *err_code = cJSON_GetObjectItemCaseSensitive(err_obj, key_err_code);
-  if (!err_code) {
-    printf("[%s:%d]: error code found\n", __func__, __LINE__);
-    return NULL;
-  }
-  if (!cJSON_IsNumber(err_code)) {
-    printf("[%s:%d]: error code is not a number\n", __func__, __LINE__);
-    return NULL;
-  }
-
-  cJSON *err_msg = cJSON_GetObjectItemCaseSensitive(err_obj, key_err_msg);
-  if (err_msg == NULL) {
-    printf("[%s:%d] error message not found\n", __func__, __LINE__);
-    return NULL;
-  }
-  if (!cJSON_IsString(err_msg) || (err_msg->valuestring == NULL)) {
+  if (!cJSON_IsString(err_obj) || (err_obj->valuestring == NULL)) {
     printf("[%s:%d] error message is not a string\n", __func__, __LINE__);
     return NULL;
   }
@@ -55,15 +40,14 @@ res_err_t *deser_error(cJSON *j_obj) {
     printf("[%s:%d] OOM\n", __func__, __LINE__);
     return NULL;
   }
-  size_t len = strlen(err_msg->valuestring);
+  size_t len = strlen(err_obj->valuestring);
   res_err->msg = malloc(len + 1);
   if (res_err->msg == NULL) {
     free(res_err);
     printf("[%s:%d] OOM\n", __func__, __LINE__);
     return NULL;
   }
-  strncpy(res_err->msg, err_msg->valuestring, len);
+  strncpy(res_err->msg, err_obj->valuestring, len);
   res_err->msg[len] = '\0';
-  res_err->code = err_code->valueint;
   return res_err;
 }

@@ -1,6 +1,3 @@
-// #include <stdlib.h>
-// #include <string.h>
-
 #ifndef __XTENSA__  // workaround: srcFilter is not working in PlatformIO
 #include <curl/curl.h>
 
@@ -25,9 +22,11 @@ int http_client_post(http_client_config_t const* const config, http_buf_t const*
                      http_buf_t* const response) {
   int ret = 0;
   CURL* curl = curl_easy_init();
+  struct curl_slist* headers = NULL;
   if (curl) {
     curl_easy_setopt(curl, CURLOPT_URL, config->url);
-    // curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+    headers = curl_slist_append(headers, "Content-Type: application/json");
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request->data);
 
@@ -45,6 +44,7 @@ int http_client_post(http_client_config_t const* const config, http_buf_t const*
     }
     /* always cleanup */
     curl_easy_cleanup(curl);
+    curl_slist_free_all(headers);
     return ret;
   }
   return -1;
