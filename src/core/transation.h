@@ -15,7 +15,7 @@ extern "C" {
 #define TRANSACTION_ID_BYTES 32
 #define TRANSACTION_ID_BASE58_LEN 48
 // OutputID is the data type that represents the identifier for an Output.
-#define OUTPUT_ID_BYTES (IOTA_ADDRESS_BYTES + TRANSACTION_ID_BYTES)
+#define OUTPUT_ID_BYTES (TANGLE_ADDRESS_BYTES + TRANSACTION_ID_BYTES)
 #define OUTPUT_ID_BASE58_LEN 96
 
 /**
@@ -23,7 +23,7 @@ extern "C" {
  *
  */
 typedef struct {
-  byte_t address[IOTA_ADDRESS_BYTES];
+  byte_t address[TANGLE_ADDRESS_BYTES];
   balance_t balance;
 } tx_output_t;
 
@@ -194,7 +194,7 @@ void tx_outputs_print(tx_outputs_t *tx_out);
   for (o = (tx_output_t *)utarray_front(tx_out); o != NULL; o = (tx_output_t *)utarray_next(tx_out, o))
 
 // typedef struct {
-//   byte_t address[IOTA_ADDRESS_BYTES];
+//   byte_t address[TANGLE_ADDRESS_BYTES];
 //   byte_t keypair[32];
 //   byte_t signature[ED_SIGNATURE_BYTES];
 // } tx_signature_t;

@@ -14,7 +14,7 @@ void test_http() {
   http_buf_t* response = http_buf_new();
   http_buf_t* req = http_buf_new_with_data((byte_t*)str, strlen(str) + 1);
   conf.url = "https://httpbin.org/post";
-  http_client_post(response, &conf, req);
+  TEST_ASSERT(http_client_post(&conf, req, response) == 0);
   TEST_ASSERT_NOT_NULL(response->data);
   // http_buf2str(response);  // convert data to string for printf debugging.
   // printf("%s\n", response->data);
@@ -26,7 +26,7 @@ void test_http() {
   //=========HTTPS GET==========
   response = http_buf_new();
   conf.url = "https://httpbin.org/get";
-  http_client_get(response, &conf);
+  TEST_ASSERT(http_client_get(&conf, response) == 0);
   TEST_ASSERT_NOT_NULL(response->data);
   // http_buf2str(response);  // convert data to string for printf debugging.
   // printf("%s\n", response->data);
@@ -36,7 +36,7 @@ void test_http() {
   //=========HTTPS Stream==========
   response = http_buf_new();
   conf.url = "https://httpbin.org/stream-bytes/101";
-  http_client_get(response, &conf);
+  TEST_ASSERT(http_client_get(&conf, response) == 0);
   TEST_ASSERT_NOT_NULL(response->data);
   TEST_ASSERT_EQUAL_UINT32(101, response->len);
   // printf("%zu\n", response->len);
@@ -46,7 +46,7 @@ void test_http() {
   //=========HTTPS base64 decode==========
   response = http_buf_new();
   conf.url = "https://httpbin.org/base64/SFRUUEJJTiBpcyBhd2Vzb21l";
-  http_client_get(response, &conf);
+  TEST_ASSERT(http_client_get(&conf, response) == 0);
   TEST_ASSERT_NOT_NULL(response->data);
   http_buf2str(response);  // convert data to string for strcmp.
   TEST_ASSERT_EQUAL_STRING("HTTPBIN is awesome", response->data);
@@ -57,7 +57,7 @@ void test_http() {
   //=========HTTPS delay==========
   response = http_buf_new();
   conf.url = "https://httpbin.org/delay/5";
-  http_client_get(response, &conf);
+  TEST_ASSERT(http_client_get(&conf, response) == 0);
   TEST_ASSERT_NOT_NULL(response->data);
   http_buf2str(response);
   printf("%s\n", response->data);
@@ -67,7 +67,7 @@ void test_http() {
   //=========HTTPS Stream JSON==========
   response = http_buf_new();
   conf.url = "https://httpbin.org/stream/3";
-  http_client_get(response, &conf);
+  TEST_ASSERT(http_client_get(&conf, response) == 0);
   TEST_ASSERT_NOT_NULL(response->data);
   printf("data size: %zu\n", response->len);
   http_buf2str(response);  // convert data to string for printf debugging.

@@ -14,13 +14,13 @@ bool tx_id_2_base58(char str_buf[], size_t *buf_len, byte_t id[]) {
 
 void tx_output_id_random(byte_t output_id[], byte_t addr[]) {
   // output id is constructed by address and id.
-  memcpy(output_id, addr, IOTA_ADDRESS_BYTES);
-  randombytes_buf((void *const)output_id + IOTA_ADDRESS_BYTES, TRANSACTION_ID_BYTES);
+  memcpy(output_id, addr, TANGLE_ADDRESS_BYTES);
+  randombytes_buf((void *const)output_id + TANGLE_ADDRESS_BYTES, TRANSACTION_ID_BYTES);
 }
 
 void tx_output_id(byte_t output_id[], byte_t addr[], byte_t id[]) {
-  memcpy(output_id, addr, IOTA_ADDRESS_BYTES);
-  memcpy(output_id + IOTA_ADDRESS_BYTES, id, TRANSACTION_ID_BYTES);
+  memcpy(output_id, addr, TANGLE_ADDRESS_BYTES);
+  memcpy(output_id + TANGLE_ADDRESS_BYTES, id, TRANSACTION_ID_BYTES);
 }
 
 bool tx_output_id_2_base58(char str_buf[], size_t *buf_len, byte_t output_id[]) {

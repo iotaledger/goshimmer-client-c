@@ -36,7 +36,7 @@ wallet_am_t* am_new(byte_t const seed[], uint64_t last_addr_index, bitmask_t* sp
   if (!am) {
     return NULL;
   }
-  memcpy(am->seed, seed, IOTA_SEED_BYTES);
+  memcpy(am->seed, seed, TANGLE_SEED_BYTES);
   am->spent_addr = bitmask_clone(spent_addr);
   am->last_addr_index = last_addr_index;
   return am;

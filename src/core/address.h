@@ -3,13 +3,13 @@
 
 #include <stdbool.h>
 
-#include "sodium.h"
 #include "core/types.h"
+#include "sodium.h"
 
 // the length of an address (digest length = 32 + version byte length = 1).
-#define IOTA_ADDRESS_BYTES 33
-#define IOTA_ADDRESS_BASE58_LEN 48
-#define IOTA_SEED_BYTES crypto_sign_ed25519_SEEDBYTES
+#define TANGLE_ADDRESS_BYTES 33
+#define TANGLE_ADDRESS_BASE58_LEN 48
+#define TANGLE_SEED_BYTES crypto_sign_ed25519_SEEDBYTES
 
 #define ED_PUBLIC_KEY_BYTES crypto_sign_ed25519_PUBLICKEYBYTES
 #define ED_PRIVATE_KEY_BYTES crypto_sign_ed25519_SECRETKEYBYTES
@@ -25,7 +25,7 @@ typedef enum { ADDRESS_VER_ED25519 = 1, ADDRESS_VER_BLS = 2 } address_version_t;
  *
  */
 typedef struct {
-  byte_t addr[IOTA_ADDRESS_BYTES];
+  byte_t addr[TANGLE_ADDRESS_BYTES];
   uint64_t index;
 } wallet_address_t;
 
@@ -49,7 +49,7 @@ void random_seed(byte_t seed[]);
  * @return true
  * @return false
  */
-bool seed_2_base58(byte_t const seed[], char str_buf[], size_t *buf_len);
+bool seed_2_base58(byte_t const seed[], char str_buf[], size_t* buf_len);
 
 /**
  * @brief Gets seed bytes from a human readable seed string.

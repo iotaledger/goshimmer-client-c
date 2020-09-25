@@ -21,8 +21,9 @@ static size_t cb_write_fn(void* data, size_t size, size_t nmemb, void* userp) {
   return realsize;
 }
 
-void http_client_post(http_buf_t* const response, http_client_config_t const* const config,
-                      http_buf_t const* const request) {
+int http_client_post(http_client_config_t const* const config, http_buf_t const* const request,
+                     http_buf_t* const response) {
+  int ret = 0;
   CURL* curl = curl_easy_init();
   if (curl) {
     curl_easy_setopt(curl, CURLOPT_URL, config->url);
@@ -38,14 +39,19 @@ void http_client_post(http_buf_t* const response, http_client_config_t const* co
 
     CURLcode res = curl_easy_perform(curl);
     /* Check for errors */
-    if (res != CURLE_OK) fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-
+    if (res != CURLE_OK) {
+      printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+      ret = -1;
+    }
     /* always cleanup */
     curl_easy_cleanup(curl);
+    return ret;
   }
+  return -1;
 }
 
-void http_client_get(http_buf_t* const response, http_client_config_t const* const config) {
+int http_client_get(http_client_config_t const* const config, http_buf_t* const response) {
+  int ret = 0;
   CURL* curl = curl_easy_init();
   if (curl) {
     curl_easy_setopt(curl, CURLOPT_URL, config->url);
@@ -59,10 +65,15 @@ void http_client_get(http_buf_t* const response, http_client_config_t const* con
 
     CURLcode res = curl_easy_perform(curl);
     /* Check for errors */
-    if (res != CURLE_OK) fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+    if (res != CURLE_OK) {
+      printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+      ret = -1;
+    }
 
     /* always cleanup */
     curl_easy_cleanup(curl);
+    return ret;
   }
+  return -1;
 }
 #endif

@@ -38,9 +38,12 @@ int get_node_info(iota_client_conf_t const *conf, res_node_info_t *res) {
   }
 
   // send request via http client
-  http_client_get(http_res, &http_conf);
+  if (http_client_get(&http_conf, http_res) != 0) {
+    printf("[%s:%d]: http get failed\n", __func__, __LINE__);
+    ret = -1;
+    goto done;
+  }
   http_buf2str(http_res);
-
   // json deserialization
   deser_node_info((char const *const)http_res->data, res);
 

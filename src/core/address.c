@@ -40,14 +40,14 @@ void hex_decode_string(char const str[], uint8_t array[]) {
   }
 }
 
-void random_seed(byte_t seed[]) { randombytes_buf((void *const)seed, IOTA_SEED_BYTES); }
+void random_seed(byte_t seed[]) { randombytes_buf((void *const)seed, TANGLE_SEED_BYTES); }
 
 bool seed_2_base58(byte_t const seed[], char str_buf[], size_t *buf_len) {
-  return b58enc((char *)str_buf, buf_len, (const void *)seed, IOTA_SEED_BYTES);
+  return b58enc((char *)str_buf, buf_len, (const void *)seed, TANGLE_SEED_BYTES);
 }
 
 bool seed_from_base58(char const str[], byte_t out_seed[]) {
-  size_t out_len = IOTA_SEED_BYTES;
+  size_t out_len = TANGLE_SEED_BYTES;
   return b58tobin((void *)out_seed, &out_len, str, strlen(str));
 }
 
@@ -74,20 +74,20 @@ static void get_subseed(byte_t const seed[], uint64_t index, byte_t subseed[]) {
   // dump_hex(hash_index, 32);
 
   // XOR subseed and hashedIndexBytes
-  memcpy(subseed, seed, IOTA_SEED_BYTES);
+  memcpy(subseed, seed, TANGLE_SEED_BYTES);
   // TODO: hardware optimization
-  for (int i = 0; i < IOTA_SEED_BYTES; i++) {
+  for (int i = 0; i < TANGLE_SEED_BYTES; i++) {
     subseed[i] = subseed[i] ^ hash_index[i];
   }
   // printf("subseed: ");
-  // dump_hex(subseed, IOTA_SEED_BYTES);
+  // dump_hex(subseed, TANGLE_SEED_BYTES);
 }
 
 void address_from_ed25519(byte_t addr_out[], byte_t seed[], uint64_t index) {
   // public key of the seed
   byte_t pub_key[ED_PUBLIC_KEY_BYTES];
   byte_t priv_key[ED_PRIVATE_KEY_BYTES];
-  byte_t subseed[IOTA_SEED_BYTES];
+  byte_t subseed[TANGLE_SEED_BYTES];
   // get subseed from seed
   get_subseed(seed, index, subseed);
   // get ed25519 public and private key from subseed
@@ -108,7 +108,7 @@ void address_from_ed25519(byte_t addr_out[], byte_t seed[], uint64_t index) {
   memcpy((void *)(addr_out + 1), digest, 32);
 }
 
-void address_get(byte_t seed[], uint64_t index, address_version_t version, wallet_address_t* addr_out) {
+void address_get(byte_t seed[], uint64_t index, address_version_t version, wallet_address_t *addr_out) {
   if (version == ADDRESS_VER_ED25519) {
     address_from_ed25519(addr_out->addr, seed, index);
     addr_out->index = index;
@@ -118,16 +118,16 @@ void address_get(byte_t seed[], uint64_t index, address_version_t version, walle
   }
 }
 
-bool address_2_base58(wallet_address_t const * const address, char str_buf[]) {
-  size_t buf_len = IOTA_ADDRESS_BASE58_LEN;
-  return b58enc(str_buf, &buf_len, (const void *)address->addr, IOTA_ADDRESS_BYTES);
-  // bool ret = b58enc(str_buf, &buf_len, (const void *)address, IOTA_ADDRESS_BYTES);
+bool address_2_base58(wallet_address_t const *const address, char str_buf[]) {
+  size_t buf_len = TANGLE_ADDRESS_BASE58_LEN;
+  return b58enc(str_buf, &buf_len, (const void *)address->addr, TANGLE_ADDRESS_BYTES);
+  // bool ret = b58enc(str_buf, &buf_len, (const void *)address, TANGLE_ADDRESS_BYTES);
   // printf("addr len %ld, %s, ret = %d\n", buf_len, str_buf, ret);
   // return ret;
 }
 
 bool address_from_base58(char const base58_str[], byte_t addr[]) {
-  size_t addr_len = IOTA_ADDRESS_BYTES;
+  size_t addr_len = TANGLE_ADDRESS_BYTES;
   return b58tobin((void *)addr, &addr_len, base58_str, strlen(base58_str));
 }
 
@@ -136,7 +136,7 @@ void sign_signature(byte_t const seed[], uint64_t index, byte_t const data[], ui
   //
   byte_t pub_key[ED_PUBLIC_KEY_BYTES];
   byte_t priv_key[ED_PRIVATE_KEY_BYTES];
-  byte_t subseed[IOTA_SEED_BYTES];
+  byte_t subseed[TANGLE_SEED_BYTES];
   unsigned long long sign_len = 0;
   // get subseed from seed
   get_subseed(seed, index, subseed);
@@ -152,7 +152,7 @@ bool sign_verify_signature(byte_t const seed[], uint64_t index, byte_t signature
                            size_t data_len) {
   byte_t pub_key[ED_PUBLIC_KEY_BYTES];
   byte_t priv_key[ED_PRIVATE_KEY_BYTES];
-  byte_t subseed[IOTA_SEED_BYTES];
+  byte_t subseed[TANGLE_SEED_BYTES];
   byte_t exp_data[200];
   unsigned long long exp_data_len = 0;
   // get subseed from seed

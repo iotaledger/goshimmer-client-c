@@ -7,7 +7,7 @@
 #include "utils/bitmask.h"
 
 typedef struct {
-  byte_t seed[IOTA_SEED_BYTES];
+  byte_t seed[TANGLE_SEED_BYTES];
   uint64_t last_addr_index;
   bitmask_t* spent_addr;
   uint64_t first_unspent_idx;
