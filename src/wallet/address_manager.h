@@ -6,6 +6,16 @@
 #include "core/address.h"
 #include "utils/bitmask.h"
 
+/**
+ * @brief A wallet address represents an address in a wallet. It extends the normal address type with an index number
+ * that was used to generate the address from its seed.
+ *
+ */
+typedef struct {
+  byte_t addr[TANGLE_ADDRESS_BYTES];
+  uint64_t index;
+} wallet_address_t;
+
 typedef struct {
   byte_t seed[TANGLE_SEED_BYTES];
   uint64_t last_addr_index;

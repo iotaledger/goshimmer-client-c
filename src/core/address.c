@@ -108,19 +108,18 @@ void address_from_ed25519(byte_t addr_out[], byte_t seed[], uint64_t index) {
   memcpy((void *)(addr_out + 1), digest, 32);
 }
 
-void address_get(byte_t seed[], uint64_t index, address_version_t version, wallet_address_t *addr_out) {
+void address_get(byte_t seed[], uint64_t index, address_version_t version, byte_t addr_out[]) {
   if (version == ADDRESS_VER_ED25519) {
-    address_from_ed25519(addr_out->addr, seed, index);
-    addr_out->index = index;
+    address_from_ed25519(addr_out, seed, index);
   } else {
     // TODO
     printf("TODO");
   }
 }
 
-bool address_2_base58(wallet_address_t const *const address, char str_buf[]) {
+bool address_2_base58(byte_t const address[], char str_buf[]) {
   size_t buf_len = TANGLE_ADDRESS_BASE58_LEN;
-  return b58enc(str_buf, &buf_len, (const void *)address->addr, TANGLE_ADDRESS_BYTES);
+  return b58enc(str_buf, &buf_len, (const void *)address, TANGLE_ADDRESS_BYTES);
   // bool ret = b58enc(str_buf, &buf_len, (const void *)address, TANGLE_ADDRESS_BYTES);
   // printf("addr len %ld, %s, ret = %d\n", buf_len, str_buf, ret);
   // return ret;

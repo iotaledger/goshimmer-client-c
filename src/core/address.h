@@ -19,16 +19,6 @@
 // address signature version
 typedef enum { ADDRESS_VER_ED25519 = 1, ADDRESS_VER_BLS = 2 } address_version_t;
 
-/**
- * @brief A wallet address represents an address in a wallet. It extends the normal address type with an index number
- * that was used to generate the address from its seed.
- *
- */
-typedef struct {
-  byte_t addr[TANGLE_ADDRESS_BYTES];
-  uint64_t index;
-} wallet_address_t;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -69,7 +59,7 @@ bool seed_from_base58(char const str[], byte_t out_seed[]);
  * @param[in] version The address signature version
  * @param[out] addr_out An address
  */
-void address_get(byte_t seed[], uint64_t index, address_version_t version, wallet_address_t* addr_out);
+void address_get(byte_t seed[], uint64_t index, address_version_t version, byte_t addr_out[]);
 
 /**
  * @brief Gets a human readable version of the address (base58 encoded).
@@ -79,7 +69,7 @@ void address_get(byte_t seed[], uint64_t index, address_version_t version, walle
  * @return true
  * @return false
  */
-bool address_2_base58(wallet_address_t const* const address, char str_buf[]);
+bool address_2_base58(byte_t const address[], char str_buf[]);
 
 /**
  * @brief Converts base58 into IOTA address raw data.

@@ -5,7 +5,7 @@
 #include "client/network/http.h"
 
 void test_get_funds() {
-  iota_client_conf_t ctx = {
+  tangle_client_conf_t ctx = {
       .url = "https://api.goshimmer/",
       .port = 0  // use default port number
   };
