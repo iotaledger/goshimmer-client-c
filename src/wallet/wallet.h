@@ -4,10 +4,13 @@
 #include <stdbool.h>
 
 #include "client/client_service.h"
+#include "wallet/address_manager.h"
+#include "wallet/asset_registry.h"
+#include "wallet/output.h"
 
 typedef struct {
-  iota_client_conf_t endpoint;
-  // wallet_am_t addr_manager;
+  tangle_client_conf_t endpoint;
+  wallet_am_t addr_manager;
   // wallet_ar_t asset_reg;
   // wallet_om_t unspent_manager;
 } wallet_t;
@@ -15,6 +18,48 @@ typedef struct {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// creates or init a wallet instance
+int wallet_init();
+
+// destory wallet instance
+void wallet_free();
+
+// issues a payment of the given amount to the given address.
+int wallet_send_funds();
+int wallet_send_funds_opt();
+
+// creates a new colored token with the given details.
+int wallet_create_asset();
+int wallet_update_asset();
+int wallet_delete_asset();
+
+// returns the last receive address of the wallet.
+int wallet_receive_address();
+
+// generates and returns a new unused receive address.
+int wallet_new_address();
+
+// returns the address that is used for the remainder of funds, aka first unspent address
+int wallet_remainder_address();
+
+// returns the unspent outputs that are available for spending.
+int wallet_unspent_outputs();
+
+// requests some funds from the faucet for testing purposes.
+int wallet_req_funds();
+
+// the confirmed and pending balance of the funds managed by this wallet.
+int wallet_balance();
+
+// from all the inputs determine which ones we need to consume.
+int wallet_determine_outputs();
+
+// build input for the transfer
+int wallet_build_inputs();
+
+// build outputs for the transfer
+int wallet_build_outputs();
 
 #ifdef __cplusplus
 }

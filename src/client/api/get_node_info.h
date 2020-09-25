@@ -24,7 +24,7 @@ extern "C" {
  * @param[out] res A response object of node info
  * @return int 0 on success
  */
-int get_node_info(iota_client_conf_t const *conf, res_node_info_t *res);
+int get_node_info(tangle_client_conf_t const *conf, res_node_info_t *res);
 
 /**
  * @brief node info JSON deserialization

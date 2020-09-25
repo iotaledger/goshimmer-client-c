@@ -7,7 +7,7 @@
 #include "client/network/http_buffer.h"
 #include "utils/iota_str.h"
 
-int get_node_info(iota_client_conf_t const *conf, res_node_info_t *res) {
+int get_node_info(tangle_client_conf_t const *conf, res_node_info_t *res) {
   int ret = 0;
   char const *const cmd_info = "info";
   // compose restful api command

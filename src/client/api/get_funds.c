@@ -28,7 +28,7 @@ static int request_builder(char const addr[], http_buf_t *req) {
   return ret;
 }
 
-int get_funds(iota_client_conf_t const *conf, char const addr[], res_get_funds_t *res) {
+int get_funds(tangle_client_conf_t const *conf, char const addr[], res_get_funds_t *res) {
   int ret = 0;
   char const *const cmd_faucet = "faucet";
   // compose restful api command
@@ -75,8 +75,9 @@ int get_funds(iota_client_conf_t const *conf, char const addr[], res_get_funds_t
   }
   http_buf2str(http_res);
 
-  printf("req: %s\n", http_req->data);
-  printf("res: %s\n", http_res->data);
+  // printf("req: %s\n", http_req->data);
+  // printf("res: %s\n", http_res->data);
+
   // json deserialization
   deser_get_funds((char const *const)http_res->data, res);
 

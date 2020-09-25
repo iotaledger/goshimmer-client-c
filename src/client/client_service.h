@@ -7,7 +7,7 @@
 typedef struct {
   char url[256];
   uint16_t port;
-} iota_client_conf_t;
+} tangle_client_conf_t;
 
 #ifdef __cplusplus
 extern "C" {

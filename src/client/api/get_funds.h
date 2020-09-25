@@ -19,8 +19,24 @@ typedef struct {
 extern "C" {
 #endif
 
-int get_funds(iota_client_conf_t const *conf, char const addr[], res_get_funds_t *res);
+/**
+ * @brief creates a faucet request (0-value) message with the given destination address and broadcasts it to the node's
+ * neighbors. It returns the message ID if successful.
+ *
+ * @param[in] conf A client instance
+ * @param[in] addr A destination address
+ * @param[out] res A response object
+ * @return int 0 on success
+ */
+int get_funds(tangle_client_conf_t const *conf, char const addr[], res_get_funds_t *res);
 
+/**
+ * @brief Response deserialization
+ *
+ * @param[in] j_str A string of JSON object
+ * @param[out] res A response object
+ * @return int 0 on success
+ */
 int deser_get_funds(char const *const j_str, res_get_funds_t *res);
 
 #ifdef __cplusplus
