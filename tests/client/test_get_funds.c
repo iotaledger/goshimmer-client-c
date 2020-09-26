@@ -30,7 +30,7 @@ int main() {
   http_client_init();
 
   RUN_TEST(test_deser_get_funds);
-  RUN_TEST(test_get_funds);
+  // RUN_TEST(test_get_funds);
 
   http_client_clean();
 

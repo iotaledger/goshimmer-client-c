@@ -36,6 +36,7 @@ typedef struct {
   tx_inputs_t *inputs;
   tx_outputs_t *outputs;
   // TODO: signatures
+  // TODO: payload
 } transaction_t;
 
 /**

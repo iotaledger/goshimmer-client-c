@@ -35,6 +35,14 @@ extern "C" {
 #endif
 
 /**
+ * @brief printf byte_t data in hex
+ *
+ * @param[in] data A byte_t buffer
+ * @param[in] len The length of data
+ */
+void dump_hex(byte_t const data[], size_t len);
+
+/**
  * @brief Gets a random seed.
  *
  * @param[out] seed An output seed
