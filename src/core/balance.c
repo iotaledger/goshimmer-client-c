@@ -6,6 +6,8 @@
 #include "core/balance.h"
 #include "libbase58.h"
 
+static UT_icd const balance_list_icd = {sizeof(balance_t), NULL, NULL, NULL};
+
 static bool empty_color(byte_t color[]) {
   for (int i = 0; i < BALANCE_COLOR_BYTES; i++) {
     if (color[i] != 0) {
@@ -16,7 +18,7 @@ static bool empty_color(byte_t color[]) {
 }
 
 bool balance_color_2_base58(char color_str[], byte_t color[]) {
-  size_t buf_len = BALANCE_COLOR_BASE58_LEN;
+  size_t buf_len = BALANCE_COLOR_BASE58_BUF;
   bool ret = true;
   if (empty_color(color)) {
     snprintf(color_str, buf_len, "IOTA");
@@ -50,11 +52,17 @@ void balance_2_bytes(byte_t balance_bytes[], balance_t* balance) {
 }
 
 void print_balance(balance_t* balance) {
-  if (empty_color(balance->color)) {
-    char color_str[BALANCE_COLOR_BASE58_LEN];
+  if (!empty_color(balance->color)) {
+    char color_str[BALANCE_COLOR_BASE58_BUF];
     balance_color_2_base58(color_str, balance->color);
     printf("balance[%" PRId64 ", %s]\n", balance->value, color_str);
   } else {
     printf("balance[%" PRId64 ", IOTA]\n", balance->value);
   }
+}
+
+balance_list_t* balance_list_new() {
+  balance_list_t* list = NULL;
+  utarray_new(list, &balance_list_icd);
+  return list;
 }

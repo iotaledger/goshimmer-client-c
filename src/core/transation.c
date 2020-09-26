@@ -52,8 +52,8 @@ tx_outputs_t *tx_outputs_new() {
 }
 
 void tx_outputs_print(tx_outputs_t *tx_out) {
-  char addr[IOTA_ADDRESS_BASE58_LEN];
-  char color[BALANCE_COLOR_BASE58_LEN];
+  char addr[TANGLE_ADDRESS_BASE58_BUF];
+  char color[BALANCE_COLOR_BASE58_BUF];
   tx_output_t *o = NULL;
   printf("inputs:[\n");
   TX_OUTPUTS_FOREACH(tx_out, o) {

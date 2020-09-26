@@ -24,10 +24,10 @@ typedef enum { ADDRESS_VER_ED25519 = 1, ADDRESS_VER_BLS = 2 } address_version_t;
 typedef UT_array addr_list_t;
 
 /**
- * @brief loops address array
+ * @brief loops address list
  *
  */
-#define ADDR_ARRAY_FOREACH(list, elm) \
+#define ADDR_LIST_FOREACH(list, elm) \
   for (elm = (byte_t *)utarray_front(list); elm != NULL; elm = (byte_t *)utarray_next(list, elm))
 
 #ifdef __cplusplus

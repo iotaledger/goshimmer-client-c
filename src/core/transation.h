@@ -13,7 +13,7 @@ extern "C" {
 #endif
 
 #define TRANSACTION_ID_BYTES 32
-#define TRANSACTION_ID_BASE58_LEN 48
+#define TRANSACTION_ID_BASE58_BUF 48
 // OutputID is the data type that represents the identifier for an Output.
 #define OUTPUT_ID_BYTES (TANGLE_ADDRESS_BYTES + TRANSACTION_ID_BYTES)
 #define OUTPUT_ID_BASE58_LEN 96
@@ -31,6 +31,12 @@ typedef struct {
 typedef UT_array tx_inputs_t;
 // Outputs represents a list of Outputs that are part of a transaction.
 typedef UT_array tx_outputs_t;
+
+typedef struct {
+  tx_inputs_t *inputs;
+  tx_outputs_t *outputs;
+  // TODO: signatures
+} transaction_t;
 
 /**
  * @brief Gets a random transaction id.
@@ -192,23 +198,6 @@ void tx_outputs_print(tx_outputs_t *tx_out);
  */
 #define TX_OUTPUTS_FOREACH(tx_out, o) \
   for (o = (tx_output_t *)utarray_front(tx_out); o != NULL; o = (tx_output_t *)utarray_next(tx_out, o))
-
-// typedef struct {
-//   byte_t address[TANGLE_ADDRESS_BYTES];
-//   byte_t keypair[32];
-//   byte_t signature[ED_SIGNATURE_BYTES];
-// } tx_signature_t;
-//
-// typedef struct {
-//   byte_t id[32];
-//   byte_t essence[1];    // len?
-//   byte_t signature[1];  // len?
-//   tx_inputs_t* inputs;
-//   tx_outputs_t* outputs;
-//   tx_signature_t* signatures;
-//   byte_t* datapayload;  // optional
-//
-// } transaction_ctx_t;
 
 #ifdef __cplusplus
 }

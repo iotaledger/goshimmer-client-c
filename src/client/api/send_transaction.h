@@ -6,7 +6,7 @@
 #include "core/transation.h"
 
 typedef struct {
-  char tx_id[TRANSACTION_ID_BASE58_LEN];
+  char tx_id[TRANSACTION_ID_BASE58_BUF];
 } res_send_tx_t;
 
 #ifdef __cplusplus
