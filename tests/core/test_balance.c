@@ -11,13 +11,13 @@ void test_balance() {
   balance_t balan_exp;
 
   // create a new balance
-  balance_init(&balan, NULL, 100);
+  balance_init(NULL, 100, &balan);
   print_balance(&balan);
 
   // convert balance to bytes
-  balance_2_bytes(balance_byte, &balan);
+  balance_2_bytes(&balan, balance_byte);
   // init balance object from bytes
-  balance_from_bytes(&balan_exp, balance_byte);
+  balance_from_bytes(balance_byte, &balan_exp);
 
   // expect: balan_exp == balan
   TEST_ASSERT_EQUAL_MEMORY(balan_exp.color, balan.color, BALANCE_COLOR_BYTES);
@@ -27,7 +27,7 @@ void test_balance() {
     color[i] = 0x22;
   }
 
-  balance_set_color(&balan, color);
+  balance_set_color(color, &balan);
   TEST_ASSERT_EQUAL_MEMORY(balan.color, color, BALANCE_COLOR_BYTES);
   print_balance(&balan);
 }
@@ -37,7 +37,7 @@ void test_balance_list() {
   byte_t color[BALANCE_COLOR_BYTES];
   randombytes_buf((void* const)color, BALANCE_COLOR_BYTES);
 
-  balance_init(&tmp_bal, color, 100);
+  balance_init(color, 100, &tmp_bal);
 
   TEST_ASSERT_EQUAL_MEMORY(color, tmp_bal.color, BALANCE_COLOR_BYTES);
   TEST_ASSERT_EQUAL_INT32(100, tmp_bal.value);
@@ -49,7 +49,7 @@ void test_balance_list() {
   balance_list_push(list, &tmp_bal);
   TEST_ASSERT(balance_list_len(list) == 1);
 
-  balance_init(&tmp_bal, color, 200);
+  balance_init(color, 200, &tmp_bal);
   balance_list_push(list, &tmp_bal);
   TEST_ASSERT(balance_list_len(list) == 2);
 

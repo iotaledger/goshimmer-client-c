@@ -17,7 +17,7 @@ static bool empty_color(byte_t color[]) {
   return true;
 }
 
-bool balance_color_2_base58(char color_str[], byte_t color[]) {
+bool balance_color_2_base58(byte_t color[], char color_str[]) {
   size_t buf_len = BALANCE_COLOR_BASE58_BUF;
   bool ret = true;
   if (empty_color(color)) {
@@ -29,7 +29,7 @@ bool balance_color_2_base58(char color_str[], byte_t color[]) {
   return ret;
 }
 
-void balance_init(balance_t* balance, byte_t color[], int64_t value) {
+void balance_init(byte_t const color[], int64_t const value, balance_t* balance) {
   balance->value = value;
   memset(balance->color, 0, BALANCE_COLOR_BYTES);
   if (color) {
@@ -37,14 +37,14 @@ void balance_init(balance_t* balance, byte_t color[], int64_t value) {
   }
 }
 
-void balance_from_bytes(balance_t* balance, byte_t balance_bytes[]) {
+void balance_from_bytes(byte_t balance_bytes[], balance_t* balance) {
   memcpy(&balance->value, balance_bytes, sizeof(balance->value));
   memcpy(balance->color, balance_bytes + sizeof(balance->value), sizeof(balance->color));
 }
 
-void balance_set_color(balance_t* balance, byte_t color[]) { memcpy(balance->color, color, BALANCE_COLOR_BYTES); }
+void balance_set_color(byte_t color[], balance_t* balance) { memcpy(balance->color, color, BALANCE_COLOR_BYTES); }
 
-void balance_2_bytes(byte_t balance_bytes[], balance_t* balance) {
+void balance_2_bytes(balance_t* balance, byte_t balance_bytes[]) {
   // value offset
   int offset = sizeof(balance->value);
   memcpy(balance_bytes, &balance->value, offset);

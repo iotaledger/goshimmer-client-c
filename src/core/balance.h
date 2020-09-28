@@ -42,45 +42,45 @@ extern "C" {
 /**
  * @brief Inits a balance object by given value and color.
  *
- * @param[out] balance The balance object
  * @param[in] color The color is optional, NULL for a default value.
  * @param[in] value The value
+ * @param[out] balance The balance object
  */
-void balance_init(balance_t *balance, byte_t color[], int64_t value);
+void balance_init(byte_t const color[], int64_t const value, balance_t *balance);
 
 /**
  * @brief Inits a balance object from the given bytes.
  *
- * @param[out] balance The balance object
  * @param[in] balance_bytes The balance bytes for serializing to the balance object
+ * @param[out] balance The balance object
  */
-void balance_from_bytes(balance_t *balance, byte_t balance_bytes[]);
+void balance_from_bytes(byte_t balance_bytes[], balance_t *balance);
 
 /**
  * @brief Serialize balance object to bytes
  *
- * @param[out] balance_bytes A buffer holds bytes data
  * @param[in] balance The balance object to be serialized
+ * @param[out] balance_bytes A buffer holds bytes data
  */
-void balance_2_bytes(byte_t balance_bytes[], balance_t *balance);
+void balance_2_bytes(balance_t *balance, byte_t balance_bytes[]);
 
 /**
  * @brief Sets color to a balance object.
  *
- * @param[out] balance the balance object
  * @param[in] color The color bytes to be set
+ * @param[out] balance the balance object
  */
-void balance_set_color(balance_t *balance, byte_t color[]);
+void balance_set_color(byte_t color[], balance_t *balance);
 
 /**
  * @brief Gets a human readable color string (base58 encoded).
  *
- * @param[out] color_str A buffer holds color string
  * @param[in] color A color object in bytes
+ * @param[out] color_str A buffer holds color string
  * @return true
  * @return false
  */
-bool balance_color_2_base58(char color_str[], byte_t color[]);
+bool balance_color_2_base58(byte_t color[], char color_str[]);
 
 /**
  * @brief print out a balance object
