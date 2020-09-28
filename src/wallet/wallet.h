@@ -1,5 +1,5 @@
-#ifndef __WALLET_WALLET_H__
-#define __WALLET_WALLET_H__
+#ifndef __WALLET_API_H__
+#define __WALLET_API_H__
 
 #include <stdbool.h>
 
@@ -10,7 +10,7 @@
 
 typedef struct {
   tangle_client_conf_t endpoint;
-  wallet_am_t addr_manager;
+  wallet_am_t* addr_manager;
   // wallet_ar_t asset_reg;
   // wallet_om_t unspent_manager;
 } wallet_t;
@@ -20,10 +20,32 @@ extern "C" {
 #endif
 
 // creates or init a wallet instance
-int wallet_init();
 
-// destory wallet instance
-void wallet_free();
+/**
+ * @brief Creates or initializes a wallet instance
+ *
+ * @param[in] url The URL of an endpoint
+ * @param[in] port The port number, 0 for default port (8443 or 443)
+ * @param[in] seed The seed, NULL for random seed
+ * @return wallet_t* A wallet instance
+ */
+wallet_t* wallet_init(char const url[], uint16_t port, byte_t const seed[]);
+
+/**
+ * @brief Frees a wallet instance
+ *
+ * @param[in] w A wallet instance
+ */
+void wallet_free(wallet_t* w);
+
+/**
+ * @brief Checks if connected endpoint is synced.
+ *
+ * @param[in] w A wallet instance
+ * @return true The connected node is synced
+ * @return false The connected node is unsynced
+ */
+bool wallet_is_node_synced(wallet_t* w);
 
 // issues a payment of the given amount to the given address.
 int wallet_send_funds();

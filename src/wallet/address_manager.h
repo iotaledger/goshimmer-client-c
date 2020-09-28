@@ -29,11 +29,21 @@ extern "C" {
 #endif
 
 /**
- * @brief News a wallet manager instance
+ * @brief Creates or initializes an address managerment
  *
+ * @param seed
+ * @param last_addr_index
+ * @param spent_addr
  * @return wallet_am_t*
  */
-wallet_am_t* am_new();
+wallet_am_t* am_new(byte_t const seed[], uint64_t last_addr_index, bitmask_t* spent_addr);
+
+/**
+ * @brief Frees an address managerment instance
+ *
+ * @param am An address managerment instance
+ */
+void am_free(wallet_am_t* am);
 
 /**
  * @brief Gets address from a given index, the last_addr_index and last_unspent_idx might got updated.

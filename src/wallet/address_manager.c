@@ -34,12 +34,35 @@ static void am_update_last_unspent_index(wallet_am_t* const am) {
 wallet_am_t* am_new(byte_t const seed[], uint64_t last_addr_index, bitmask_t* spent_addr) {
   wallet_am_t* am = malloc(sizeof(wallet_am_t));
   if (!am) {
+    printf("[%s %d] OOM\n", __func__, __LINE__);
     return NULL;
   }
-  memcpy(am->seed, seed, TANGLE_SEED_BYTES);
-  am->spent_addr = bitmask_clone(spent_addr);
+
+  // init seed
+  if (seed) {
+    memcpy(am->seed, seed, TANGLE_SEED_BYTES);
+  } else {
+    randombytes_buf((void* const)am->seed, TANGLE_SEED_BYTES);
+  }
+
+  // init spent address bitmask
+  if (spent_addr) {
+    am->spent_addr = bitmask_clone(spent_addr);
+  } else {
+    am->spent_addr = bitmask_new();
+  }
+
   am->last_addr_index = last_addr_index;
   return am;
+}
+
+void am_free(wallet_am_t* am) {
+  if (am) {
+    if (am->spent_addr) {
+      bitmask_free(am->spent_addr);
+    }
+    free(am);
+  }
 }
 
 void am_get_address(wallet_am_t* const am, uint64_t index, wallet_address_t* const out_addr) {

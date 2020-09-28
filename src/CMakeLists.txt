@@ -18,6 +18,7 @@ target_sources(
           "utils/iota_str.c"
           "utils/bitmask.c"
           "wallet/address_manager.c"
+          "wallet/wallet.c"
   PUBLIC "client/api/get_node_info.h"
          "client/api/json_utils.h"
          "client/api/response_error.h"
@@ -30,6 +31,7 @@ target_sources(
          "utils/iota_str.h"
          "utils/bitmask.h"
          "wallet/address_manager.h"
+         "wallet/wallet.h"
 )
 
 target_include_directories(qian_bao PUBLIC 

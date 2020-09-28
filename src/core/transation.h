@@ -5,6 +5,7 @@
 
 #include "core/address.h"
 #include "core/balance.h"
+#include "core/signatures.h"
 #include "core/types.h"
 #include "utarray.h"
 
@@ -27,7 +28,7 @@ typedef struct {
   balance_t balance;
 } tx_output_t;
 
-// Inputs represents a list of referenced Outputs that are used as Inputs in a transaction
+// Inputs represents a list of referenced Output IDs that are used as Inputs in a transaction
 typedef UT_array tx_inputs_t;
 // Outputs represents a list of Outputs that are part of a transaction.
 typedef UT_array tx_outputs_t;
@@ -36,6 +37,7 @@ typedef struct {
   tx_inputs_t *inputs;
   tx_outputs_t *outputs;
   // TODO: signatures
+  ed_signature_t *signatures;
   // TODO: payload
 } transaction_t;
 

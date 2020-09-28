@@ -1,8 +1,8 @@
 #ifndef __WALLET_ASSET_REGISTRY_H__
 #define __WALLET_ASSET_REGISTRY_H__
 
-#include "address.h"
-#include "balance.h"
+#include "core/address.h"
+#include "core/balance.h"
 #include "utils/iota_str.h"
 
 /**
