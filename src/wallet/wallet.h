@@ -47,6 +47,33 @@ void wallet_free(wallet_t* w);
  */
 bool wallet_is_node_synced(wallet_t* w);
 
+/**
+ * @brief Gets a receive address. aka the last unspent address
+ *
+ * @param[in] w A wallet instance
+ * @param[out] addr The receive address
+ */
+void wallet_receive_address(wallet_t* w, byte_t addr[]);
+
+/**
+ * @brief Generates and returns a new unused receive address.
+ *
+ * @param[in] w A wallet instance
+ * @param[out] addr The new unused address
+ */
+void wallet_new_receive_address(wallet_t* w, byte_t addr[]);
+
+/**
+ * @brief Returns the address that is used for the remainder of funds, aka first unspent address
+ *
+ * @param[in] w A wallet instance
+ * @param[out] addr The remainder address
+ */
+void wallet_remainder_address(wallet_t* w, byte_t addr[]);
+
+// returns the unspent outputs that are available for spending.
+int wallet_unspent_outputs();
+
 // issues a payment of the given amount to the given address.
 int wallet_send_funds();
 int wallet_send_funds_opt();
@@ -55,18 +82,6 @@ int wallet_send_funds_opt();
 int wallet_create_asset();
 int wallet_update_asset();
 int wallet_delete_asset();
-
-// returns the last receive address of the wallet.
-int wallet_receive_address();
-
-// generates and returns a new unused receive address.
-int wallet_new_address();
-
-// returns the address that is used for the remainder of funds, aka first unspent address
-int wallet_remainder_address();
-
-// returns the unspent outputs that are available for spending.
-int wallet_unspent_outputs();
 
 // requests some funds from the faucet for testing purposes.
 int wallet_req_funds();

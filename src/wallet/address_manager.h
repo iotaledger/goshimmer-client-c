@@ -52,7 +52,7 @@ void am_free(wallet_am_t* am);
  * @param[in] index The address index
  * @param[out] out_addr The output address
  */
-void am_get_address(wallet_am_t* const am, uint64_t index, wallet_address_t* const out_addr);
+void am_get_address(wallet_am_t* const am, uint64_t index, byte_t out_addr[]);
 
 /**
  * @brief Generates and retruns a new unused address.
@@ -60,7 +60,7 @@ void am_get_address(wallet_am_t* const am, uint64_t index, wallet_address_t* con
  * @param[in] am A wallet manager instance
  * @param[in] out_addr The output address
  */
-void am_get_new_address(wallet_am_t* const am, wallet_address_t* const out_addr);
+void am_get_new_address(wallet_am_t* const am, byte_t out_addr[]);
 
 /**
  * @brief Returns True if the index of the address was spent already.
@@ -86,7 +86,7 @@ void am_mark_spent_address(wallet_am_t* const am, uint64_t index);
  * @param[in] am A wallet manager instance
  * @param[out] addr The first unspent address
  */
-void am_get_first_unspent_address(wallet_am_t* const am, wallet_address_t* addr);
+void am_get_first_unspent_address(wallet_am_t* const am, byte_t addr[]);
 
 /**
  * @brief Gets last unspent address
@@ -94,7 +94,7 @@ void am_get_first_unspent_address(wallet_am_t* const am, wallet_address_t* addr)
  * @param[in] am A wallet manager instance
  * @param[out] addr The last unspent address
  */
-void am_get_last_unspent_address(wallet_am_t* const am, wallet_address_t* addr);
+void am_get_last_unspent_address(wallet_am_t* const am, byte_t addr[]);
 
 #ifdef __cplusplus
 }

@@ -49,3 +49,9 @@ bool wallet_is_node_synced(wallet_t* w) {
   }
   return info.is_synced;
 }
+
+void wallet_receive_address(wallet_t* w, byte_t addr[]) { am_get_last_unspent_address(w->addr_manager, addr); }
+
+void wallet_new_receive_address(wallet_t* w, byte_t addr[]) { am_get_new_address(w->addr_manager, addr); }
+
+void wallet_remainder_address(wallet_t* w, byte_t addr[]) { am_get_first_unspent_address(w->addr_manager, addr); }

@@ -65,7 +65,7 @@ void am_free(wallet_am_t* am) {
   }
 }
 
-void am_get_address(wallet_am_t* const am, uint64_t index, wallet_address_t* const out_addr) {
+void am_get_address(wallet_am_t* const am, uint64_t index, byte_t out_addr[]) {
   if (index > am->last_addr_index) {
     // update spent address status
     am_update_spent_address(am, index, true);
@@ -77,12 +77,11 @@ void am_get_address(wallet_am_t* const am, uint64_t index, wallet_address_t* con
     am->last_unspent_idx = index;
   }
 
-  address_get(am->seed, index, ADDRESS_VER_ED25519, out_addr->addr);
-  out_addr->index = index;
+  address_get(am->seed, index, ADDRESS_VER_ED25519, out_addr);
 }
 
 // generates and returns a new unused address.
-void am_get_new_address(wallet_am_t* const am, wallet_address_t* const out_addr) {
+void am_get_new_address(wallet_am_t* const am, byte_t out_addr[]) {
   am_get_address(am, am->last_addr_index + 1, out_addr);
 }
 
@@ -103,10 +102,10 @@ void am_mark_spent_address(wallet_am_t* const am, uint64_t index) {
   }
 }
 
-void am_get_first_unspent_address(wallet_am_t* const am, wallet_address_t* addr) {
+void am_get_first_unspent_address(wallet_am_t* const am, byte_t addr[]) {
   am_get_address(am, am->first_unspent_idx, addr);
 }
 
-void am_get_last_unspent_address(wallet_am_t* const am, wallet_address_t* addr) {
+void am_get_last_unspent_address(wallet_am_t* const am, byte_t addr[]) {
   am_get_address(am, am->last_unspent_idx, addr);
 }
