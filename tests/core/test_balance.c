@@ -69,11 +69,45 @@ void test_balance_list() {
   balance_list_free(list);
 }
 
+void test_balance_ht() {
+  balance_h_t* table = balances_init();
+  TEST_ASSERT_NULL(table);
+  TEST_ASSERT_EQUAL_INT32(0, balances_count(&table));
+
+  byte_t color[BALANCE_COLOR_BYTES] = {};
+  randombytes_buf((void* const)color, BALANCE_COLOR_BYTES);
+
+  TEST_ASSERT(balances_add(&table, color, -100) == 0);
+  TEST_ASSERT_EQUAL_INT32(1, balances_count(&table));
+  TEST_ASSERT(balances_add(&table, color, 200) == -1);
+  TEST_ASSERT_EQUAL_INT32(1, balances_count(&table));
+
+  // randombytes_buf((void* const)color, BALANCE_COLOR_BYTES);
+  memset(color, 0, BALANCE_COLOR_BYTES);
+  TEST_ASSERT(balances_add(&table, color, 1000) == 0);
+  TEST_ASSERT_EQUAL_INT32(2, balances_count(&table));
+
+  randombytes_buf((void* const)color, BALANCE_COLOR_BYTES);
+  TEST_ASSERT_NULL(balances_find(&table, color));
+  TEST_ASSERT(balances_add(&table, color, 2000) == 0);
+  TEST_ASSERT_EQUAL_INT32(3, balances_count(&table));
+  balances_print(&table);
+
+  balances_remove(&table, color);
+  TEST_ASSERT_NULL(balances_find(&table, color));
+  TEST_ASSERT_EQUAL_INT32(2, balances_count(&table));
+
+  balances_print(&table);
+
+  balances_destory(&table);
+}
+
 int main() {
   UNITY_BEGIN();
 
   RUN_TEST(test_balance);
   RUN_TEST(test_balance_list);
+  RUN_TEST(test_balance_ht);
 
   return UNITY_END();
 }

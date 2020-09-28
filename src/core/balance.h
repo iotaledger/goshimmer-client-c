@@ -6,6 +6,7 @@
 
 #include "core/types.h"
 #include "utarray.h"
+#include "uthash.h"
 
 // Color represents a marker that is associated to a token balance and that gives it a certain "meaning". The zero value
 // represents "vanilla" IOTA tokens but it is also possible to define tokens that represent i.e. real world assets.
@@ -20,6 +21,12 @@ typedef struct {
 } balance_t;
 
 typedef UT_array balance_list_t;
+
+typedef struct {
+  byte_t color[BALANCE_COLOR_BYTES];
+  int64_t value;
+  UT_hash_handle hh;  // hash table handler
+} balance_h_t;
 
 /**
  * @brief loops balance list
@@ -132,6 +139,76 @@ static balance_t *balance_list_at(balance_list_t *list, size_t index) {
  * @param[in] list A balance list object.
  */
 static void balance_list_free(balance_list_t *list) { utarray_free(list); }
+
+/**
+ * @brief Initializes a balance hash table.
+ *
+ * @return balance_h_t* a NULL pointer
+ */
+static balance_h_t *balances_init() { return NULL; }
+
+/**
+ * @brief Adds a colored balance to the table
+ *
+ * @param[in] t A colored balance hash table
+ * @param[in] color The color in bytes
+ * @param[in] value The value of the balance
+ * @return int o on success
+ */
+int balances_add(balance_h_t **t, byte_t const color[], int64_t value);
+
+/**
+ * @brief Finds a balance by the given color
+ *
+ * @param[in] t A colored balance hash table
+ * @param[in] color The color to find
+ * @return balance_h_t* A point to a balance
+ */
+static balance_h_t *balances_find(balance_h_t **t, byte_t const color[]) {
+  balance_h_t *b;
+  HASH_FIND(hh, *t, color, BALANCE_COLOR_BYTES, b);
+  return b;
+};
+
+/**
+ * @brief Removes and frees a balance by the given color
+ *
+ * @param[in] t A colored balance hash table
+ * @param[in] color The color for remove
+ */
+static void balances_remove(balance_h_t **t, byte_t const color[]) {
+  balance_h_t *elm = balances_find(t, color);
+  HASH_DEL(*t, elm);
+  free(elm);
+}
+
+/**
+ * @brief The size of the balance hash table
+ *
+ * @param[in] t A colored balance hash table
+ * @return size_t The size of the table
+ */
+static size_t balances_count(balance_h_t **t) { return HASH_COUNT(*t); }
+
+/**
+ * @brief Destories the colored balance hash table
+ *
+ * @param[in] t A colored balance hash table
+ */
+static void balances_destory(balance_h_t **t) {
+  balance_h_t *curr_elm, *tmp;
+  HASH_ITER(hh, *t, curr_elm, tmp) {
+    HASH_DEL(*t, curr_elm);
+    free(curr_elm);
+  }
+}
+
+/**
+ * @brief print out a colored balance hash table
+ *
+ * @param[in] t A balance hash table
+ */
+void balances_print(balance_h_t **t);
 
 #ifdef __cplusplus
 }

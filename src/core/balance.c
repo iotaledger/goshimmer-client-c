@@ -66,3 +66,41 @@ balance_list_t* balance_list_new() {
   utarray_new(list, &balance_list_icd);
   return list;
 }
+
+int balances_add(balance_h_t** t, byte_t const color[], int64_t value) {
+  balance_h_t* e = NULL;
+  // checking uniqueness
+  e = balances_find(t, color);
+  if (e != NULL) {
+    printf("[%s:%d] address exists in table\n", __func__, __LINE__);
+    return -1;
+  }
+
+  // adding to table
+  e = malloc(sizeof(balance_h_t));
+  if (!e) {
+    printf("[Err %s:%d] OOM\n", __func__, __LINE__);
+    return -1;
+  }
+  memcpy(e->color, color, BALANCE_COLOR_BYTES);
+  e->value = value;
+  HASH_ADD(hh, *t, color, BALANCE_COLOR_BYTES, e);
+  return 0;
+}
+
+void balances_print(balance_h_t** t) {
+  balance_h_t *elm, *tmp;
+  char color_str[BALANCE_COLOR_BASE58_BUF] = {};
+  size_t counter = 0;
+  printf("balances: [\n");
+  HASH_ITER(hh, *t, elm, tmp) {
+    if (!empty_color(elm->color)) {
+      balance_color_2_base58(color_str, elm->color);
+      printf("[%zu] %s , %" PRId64 "\n", counter, color_str, elm->value);
+    } else {
+      printf("[%zu] IOTA, %" PRId64 "\n", counter, elm->value);
+    }
+    counter++;
+  }
+  printf("]\n");
+}
