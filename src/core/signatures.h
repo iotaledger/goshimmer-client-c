@@ -31,27 +31,52 @@ static ed_signature_t *ed_signatures_init() { return NULL; }
 /**
  * @brief Adds an ed signature element to the table.
  *
- * @param t
- * @param addr
- * @param pub_key
- * @param sig
+ * @param[in] t An ed25519 signature hash table
+ * @param[in] addr An address
+ * @param[in] pub_key A public key
+ * @param[in] sig A signature
+ * @return int 0 on success
  */
 int ed_signatures_add(ed_signature_t **t, byte_t const addr[], byte_t const pub_key[], byte_t const sig[]);
 
+/**
+ * @brief Finds an ed signature element by a given address
+ *
+ * @param[in] t An ed25519 signature hash table
+ * @param[in] addr An address
+ * @return ed_signature_t* A point to an ed signautre element
+ */
 static ed_signature_t *ed_signatures_find(ed_signature_t **t, byte_t const addr[]) {
   ed_signature_t *s;
   HASH_FIND(hh, *t, addr, TANGLE_ADDRESS_BYTES, s);
   return s;
 };
 
+/**
+ * @brief Removes and frees an ed signature element by given address
+ *
+ * @param[in] t An ed25519 signature hash table
+ * @param[in] addr An address
+ */
 static void ed_signatures_remove(ed_signature_t **t, byte_t addr[]) {
   ed_signature_t *elm = ed_signatures_find(t, addr);
   HASH_DEL(*t, elm);
   free(elm);
 }
 
+/**
+ * @brief The size of the ed signature hash table
+ *
+ * @param[in] t An ed25519 signature hash table
+ * @return size_t The size of table
+ */
 static size_t ed_signatures_count(ed_signature_t **t) { return HASH_COUNT(*t); }
 
+/**
+ * @brief Destories the ed signature hash table
+ *
+ * @param[in] t An ed25519 signature hash table
+ */
 static void ed_signatures_destory(ed_signature_t **t) {
   ed_signature_t *curr_elm, *tmp;
   HASH_ITER(hh, *t, curr_elm, tmp) {
