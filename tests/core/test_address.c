@@ -9,15 +9,20 @@ void test_address_gen() {
   byte_t ed25519_addr[TANGLE_ADDRESS_BYTES] = {};
   char ed25519_addr_str[TANGLE_ADDRESS_BASE58_BUF] = {};
   // random_seed(iota_seed);
-  TEST_ASSERT_TRUE(seed_from_base58("7rxy9mMdYKjcqh4V1xHRvFK2FRMieRgzzt4txA2m8Hqq", iota_seed));
+  TEST_ASSERT_TRUE(seed_from_base58("332Db2RL4NHggDX4utnn5sCwTVTqUQJ3vC42TGZFC8hK", iota_seed));
   size_t len = TANGLE_ADDRESS_BASE58_BUF;
   TEST_ASSERT_TRUE(seed_2_base58(iota_seed, seed_str, &len));
-  TEST_ASSERT_EQUAL_STRING("7rxy9mMdYKjcqh4V1xHRvFK2FRMieRgzzt4txA2m8Hqq", seed_str);
+  TEST_ASSERT_EQUAL_STRING("332Db2RL4NHggDX4utnn5sCwTVTqUQJ3vC42TGZFC8hK", seed_str);
 
   address_get(iota_seed, 0, ADDRESS_VER_ED25519, ed25519_addr);
   TEST_ASSERT_TRUE(address_2_base58(ed25519_addr, ed25519_addr_str));
-  TEST_ASSERT_EQUAL_STRING("Lie4veK3knebo9b5LTxZU4hodWesHf3p321kzv1GNT9x", ed25519_addr_str);
   // printf("addr: %s\n", ed25519_addr_str);
+  TEST_ASSERT_EQUAL_STRING("XLnYsJLvb3Pj3F1m4Mt8vtYjTBCMYwLmk5jva1UXiPjm", ed25519_addr_str);
+
+  address_get(iota_seed, 1, ADDRESS_VER_ED25519, ed25519_addr);
+  TEST_ASSERT_TRUE(address_2_base58(ed25519_addr, ed25519_addr_str));
+  // printf("addr: %s\n", ed25519_addr_str);
+  TEST_ASSERT_EQUAL_STRING("UKUjKvfrKR1RnRiBpXSKxo6DRnvW6oqffsGfDrDEiVMX", ed25519_addr_str);
 
   uint32_t data_len = 4;
   uint8_t signature[ED_SIGNATURE_BYTES + data_len];
@@ -41,6 +46,7 @@ void test_address_list() {
   TEST_ASSERT_EQUAL_INT16(0, addr_list_len(list2));
   TEST_ASSERT_NULL(addr_list_at(list1, 6));
   TEST_ASSERT_NULL(addr_list_at(list2, 0));
+  addr_list_print(list1);
 
   addr_list_push(list2, addr_list_at(list1, 0));
   addr_list_push(list2, addr_list_at(list1, 2));

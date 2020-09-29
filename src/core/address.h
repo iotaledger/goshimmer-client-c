@@ -182,6 +182,8 @@ static byte_t *addr_list_at(addr_list_t *list, size_t index) {
  */
 static void addr_list_free(addr_list_t *list) { utarray_free(list); }
 
+void addr_list_print(addr_list_t *list);
+
 #ifdef __cplusplus
 }
 #endif

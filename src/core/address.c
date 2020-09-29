@@ -86,6 +86,7 @@ static void get_subseed(byte_t const seed[], uint64_t index, byte_t subseed[]) {
 }
 
 void address_from_ed25519(byte_t addr_out[], byte_t seed[], uint64_t index) {
+  int digest_len = 32;
   // public key of the seed
   byte_t pub_key[ED_PUBLIC_KEY_BYTES];
   byte_t priv_key[ED_PRIVATE_KEY_BYTES];
@@ -100,14 +101,14 @@ void address_from_ed25519(byte_t addr_out[], byte_t seed[], uint64_t index) {
   // dump_hex(priv, ED_PRIVATE_KEY_BYTES);
 
   // digest: blake2b the public key
-  byte_t digest[ED_PRIVATE_KEY_BYTES];
-  crypto_generichash(digest, ED_PRIVATE_KEY_BYTES, pub_key, ED_PUBLIC_KEY_BYTES, NULL, 0);
+  byte_t digest[digest_len];
+  crypto_generichash(digest, digest_len, pub_key, ED_PUBLIC_KEY_BYTES, NULL, 0);
   // printf("digest: ");
   // dump_hex(digest, ED_PRIVATE_KEY_BYTES);
 
   // address[0] = version, address[1:] = digest
   addr_out[0] = ADDRESS_VER_ED25519;
-  memcpy((void *)(addr_out + 1), digest, 32);
+  memcpy((void *)(addr_out + 1), digest, digest_len);
 }
 
 void address_get(byte_t seed[], uint64_t index, address_version_t version, byte_t addr_out[]) {
@@ -173,4 +174,16 @@ addr_list_t *addr_list_new() {
   addr_list_t *list = NULL;
   utarray_new(list, &addr_list_icd);
   return list;
+}
+
+void addr_list_print(addr_list_t *list) {
+  char addr_str[TANGLE_ADDRESS_BASE58_BUF];
+  byte_t *elm = NULL;
+
+  printf("addresses: [\n");
+  ADDR_LIST_FOREACH(list, elm) {
+    address_2_base58(elm, addr_str);
+    printf("%s\n", addr_str);
+  }
+  printf("]\n");
 }
