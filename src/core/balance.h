@@ -70,7 +70,7 @@ void balance_2_bytes(balance_t *balance, byte_t balance_bytes[]);
  * @param[in] color The color bytes to be set
  * @param[out] balance the balance object
  */
-void balance_set_color(byte_t color[], balance_t *balance);
+void balance_set_color(byte_t const color[], balance_t *balance);
 
 /**
  * @brief Gets a human readable color string (base58 encoded).

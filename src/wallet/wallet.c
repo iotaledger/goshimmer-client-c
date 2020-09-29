@@ -55,3 +55,11 @@ void wallet_receive_address(wallet_t* w, byte_t addr[]) { am_get_last_unspent_ad
 void wallet_new_receive_address(wallet_t* w, byte_t addr[]) { am_get_new_address(w->addr_manager, addr); }
 
 void wallet_remainder_address(wallet_t* w, byte_t addr[]) { am_get_first_unspent_address(w->addr_manager, addr); }
+
+addr_list_t* wallet_addresses(wallet_t* w) { return am_addresses(w->addr_manager); }
+
+addr_list_t* wallet_unspent_addresses(wallet_t* w) { return am_unspent_addresses(w->addr_manager); }
+
+addr_list_t* wallet_spent_addresses(wallet_t* const w) { return am_spent_addresses(w->addr_manager); }
+
+int wallet_unspent_outputs(wallet_t* w, send_funds_op_t* opt) {}

@@ -9,11 +9,24 @@
 #include "wallet/output.h"
 
 typedef struct {
+  byte_t address[TANGLE_ADDRESS_BYTES];
+  byte_t tx_id[TRANSACTION_ID_BYTES];
+} unspent_output_t;
+
+typedef struct {
   tangle_client_conf_t endpoint;
   wallet_am_t* addr_manager;
   // wallet_ar_t asset_reg;
   // wallet_om_t unspent_manager;
 } wallet_t;
+
+// a struct that is used to aggregate the optional parameters provided in the send founds call
+typedef struct {
+  int64_t amount;
+  byte_t address[TANGLE_ADDRESS_BYTES];
+  byte_t color[BALANCE_COLOR_BYTES];
+  byte_t remainder[TANGLE_ADDRESS_BYTES];
+} send_funds_op_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -71,8 +84,32 @@ void wallet_new_receive_address(wallet_t* w, byte_t addr[]);
  */
 void wallet_remainder_address(wallet_t* w, byte_t addr[]);
 
+/**
+ * @brief Gets a list of all addresses of the wallet.
+ *
+ * @param[in] w A wallet instance
+ * @return addr_list_t*
+ */
+addr_list_t* wallet_addresses(wallet_t* const w);
+
+/**
+ * @brief Gets a list of all unspent addresses of the wallet.
+ *
+ * @param[in] w A wallet instance
+ * @return addr_list_t*
+ */
+addr_list_t* wallet_unspent_addresses(wallet_t* const w);
+
+/**
+ * @brief Gets a list of all spent addresses of the wallet.
+ *
+ * @param[in] w A wallet instance
+ * @return addr_list_t*
+ */
+addr_list_t* wallet_spent_addresses(wallet_t* const w);
+
 // returns the unspent outputs that are available for spending.
-int wallet_unspent_outputs();
+int wallet_unspent_outputs(wallet_t* w, send_funds_op_t* opt);
 
 // issues a payment of the given amount to the given address.
 int wallet_send_funds();

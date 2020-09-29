@@ -53,6 +53,9 @@ wallet_am_t* am_new(byte_t const seed[], uint64_t last_addr_index, bitmask_t* sp
   }
 
   am->last_addr_index = last_addr_index;
+  am->first_unspent_idx = 0;
+  am->last_unspent_idx = 0;
+  // TODO update address status from the Tangle
   return am;
 }
 
@@ -108,4 +111,50 @@ void am_get_first_unspent_address(wallet_am_t* const am, byte_t addr[]) {
 
 void am_get_last_unspent_address(wallet_am_t* const am, byte_t addr[]) {
   am_get_address(am, am->last_unspent_idx, addr);
+}
+
+addr_list_t* am_addresses(wallet_am_t* const am) {
+  byte_t tmp_addr[TANGLE_ADDRESS_BYTES] = {};
+  addr_list_t* list = addr_list_new();
+  if (list == NULL) {
+    return NULL;
+  }
+
+  for (uint64_t i = 0; i <= am->last_addr_index; i++) {
+    address_get(am->seed, i, ADDRESS_VER_ED25519, tmp_addr);
+    addr_list_push(list, tmp_addr);
+  }
+  return list;
+}
+
+addr_list_t* am_unspent_addresses(wallet_am_t* const am) {
+  byte_t tmp_addr[TANGLE_ADDRESS_BYTES] = {};
+  addr_list_t* list = addr_list_new();
+  if (list == NULL) {
+    return NULL;
+  }
+
+  for (uint64_t i = am->first_unspent_idx; i <= am->last_addr_index; i++) {
+    if (!am_is_spent_address(am, i)) {
+      address_get(am->seed, i, ADDRESS_VER_ED25519, tmp_addr);
+      addr_list_push(list, tmp_addr);
+    }
+  }
+  return list;
+}
+
+addr_list_t* am_spent_addresses(wallet_am_t* const am) {
+  byte_t tmp_addr[TANGLE_ADDRESS_BYTES] = {};
+  addr_list_t* list = addr_list_new();
+  if (list == NULL) {
+    return NULL;
+  }
+
+  for (uint64_t i = 0; i <= am->last_addr_index; i++) {
+    if (am_is_spent_address(am, i)) {
+      address_get(am->seed, i, ADDRESS_VER_ED25519, tmp_addr);
+      addr_list_push(list, tmp_addr);
+    }
+  }
+  return list;
 }

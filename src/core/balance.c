@@ -33,7 +33,7 @@ void balance_init(byte_t const color[], int64_t const value, balance_t* balance)
   balance->value = value;
   memset(balance->color, 0, BALANCE_COLOR_BYTES);
   if (color) {
-    balance_set_color(balance, color);
+    balance_set_color(color, balance);
   }
 }
 
@@ -42,7 +42,7 @@ void balance_from_bytes(byte_t balance_bytes[], balance_t* balance) {
   memcpy(balance->color, balance_bytes + sizeof(balance->value), sizeof(balance->color));
 }
 
-void balance_set_color(byte_t color[], balance_t* balance) { memcpy(balance->color, color, BALANCE_COLOR_BYTES); }
+void balance_set_color(byte_t const color[], balance_t* balance) { memcpy(balance->color, color, BALANCE_COLOR_BYTES); }
 
 void balance_2_bytes(balance_t* balance, byte_t balance_bytes[]) {
   // value offset
@@ -54,7 +54,7 @@ void balance_2_bytes(balance_t* balance, byte_t balance_bytes[]) {
 void print_balance(balance_t* balance) {
   if (!empty_color(balance->color)) {
     char color_str[BALANCE_COLOR_BASE58_BUF];
-    balance_color_2_base58(color_str, balance->color);
+    balance_color_2_base58(balance->color, color_str);
     printf("balance[%" PRId64 ", %s]\n", balance->value, color_str);
   } else {
     printf("balance[%" PRId64 ", IOTA]\n", balance->value);
@@ -95,7 +95,7 @@ void balances_print(balance_h_t** t) {
   printf("balances: [\n");
   HASH_ITER(hh, *t, elm, tmp) {
     if (!empty_color(elm->color)) {
-      balance_color_2_base58(color_str, elm->color);
+      balance_color_2_base58(elm->color, color_str);
       printf("[%zu] %s , %" PRId64 "\n", counter, color_str, elm->value);
     } else {
       printf("[%zu] IOTA, %" PRId64 "\n", counter, elm->value);
