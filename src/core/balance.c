@@ -51,9 +51,10 @@ void balance_2_bytes(balance_t* balance, byte_t balance_bytes[]) {
   memcpy(balance_bytes + offset, balance->color, sizeof(balance->color));
 }
 
-void print_balance(balance_t* balance) {
+void balance_print(balance_t* balance) {
+  char color_str[BALANCE_COLOR_BASE58_BUF] = {};
+
   if (!empty_color(balance->color)) {
-    char color_str[BALANCE_COLOR_BASE58_BUF];
     balance_color_2_base58(balance->color, color_str);
     printf("balance[%" PRId64 ", %s]\n", balance->value, color_str);
   } else {
@@ -67,17 +68,23 @@ balance_list_t* balance_list_new() {
   return list;
 }
 
-int balances_add(balance_h_t** t, byte_t const color[], int64_t value) {
-  balance_h_t* e = NULL;
+void balance_list_print(balance_list_t* list) {
+  balance_t* elm = NULL;
+
+  BALANCE_LIST_FOREACH(list, elm) { balance_print(elm); }
+}
+
+int balance_ht_add(balance_ht_t** t, byte_t const color[], int64_t value) {
+  balance_ht_t* e = NULL;
   // checking uniqueness
-  e = balances_find(t, color);
+  e = balance_ht_find(t, color);
   if (e != NULL) {
     printf("[%s:%d] address exists in table\n", __func__, __LINE__);
     return -1;
   }
 
   // adding to table
-  e = malloc(sizeof(balance_h_t));
+  e = malloc(sizeof(balance_ht_t));
   if (!e) {
     printf("[Err %s:%d] OOM\n", __func__, __LINE__);
     return -1;
@@ -88,8 +95,8 @@ int balances_add(balance_h_t** t, byte_t const color[], int64_t value) {
   return 0;
 }
 
-void balances_print(balance_h_t** t) {
-  balance_h_t *elm, *tmp;
+void balance_ht_print(balance_ht_t** t) {
+  balance_ht_t *elm, *tmp;
   char color_str[BALANCE_COLOR_BASE58_BUF] = {};
   size_t counter = 0;
   printf("balances: [\n");

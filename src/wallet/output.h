@@ -5,7 +5,7 @@
 
 #include "core/address.h"
 #include "core/balance.h"
-#include "core/transation.h"
+#include "core/transaction.h"
 
 typedef struct {
   bool liked;
@@ -21,8 +21,8 @@ typedef struct {
  */
 typedef struct {
   wallet_address_t address;
-  byte_t tx_id[TRANSACTION_ID_BYTES];
-  balance_h_t* balance;
+  byte_t tx_output_id[TX_OUTPUT_ID_BYTES];
+  balance_ht_t* balance;
   inclusion_state_t state;
 } wallet_output_t;
 

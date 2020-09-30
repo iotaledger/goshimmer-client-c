@@ -3,7 +3,7 @@
 
 #include "client/api/response_error.h"
 #include "client/client_service.h"
-#include "core/transation.h"
+#include "core/transaction.h"
 
 typedef struct {
   char tx_id[TRANSACTION_ID_BASE58_BUF];

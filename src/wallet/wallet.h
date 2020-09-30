@@ -10,7 +10,7 @@
 
 typedef struct {
   byte_t address[TANGLE_ADDRESS_BYTES];
-  byte_t tx_id[TRANSACTION_ID_BYTES];
+  byte_t tx_output_id[TX_OUTPUT_ID_BYTES];
 } unspent_output_t;
 
 typedef struct {

@@ -20,13 +20,15 @@ typedef struct {
   byte_t color[BALANCE_COLOR_BYTES];
 } balance_t;
 
+// balance list object
 typedef UT_array balance_list_t;
 
+// balance hash table object
 typedef struct {
   byte_t color[BALANCE_COLOR_BYTES];
   int64_t value;
   UT_hash_handle hh;  // hash table handler
-} balance_h_t;
+} balance_ht_t;
 
 /**
  * @brief loops balance list
@@ -87,7 +89,7 @@ bool balance_color_2_base58(byte_t color[], char color_str[]);
  *
  * @param[in] balance A balance object.
  */
-void print_balance(balance_t *balance);
+void balance_print(balance_t *balance);
 
 /**
  * @brief Allocates a balance list object.
@@ -141,11 +143,18 @@ static balance_t *balance_list_at(balance_list_t *list, size_t index) {
 static void balance_list_free(balance_list_t *list) { utarray_free(list); }
 
 /**
+ * @brief print out a colored balance list
+ *
+ * @param[in] list A balance list
+ */
+void balance_list_print(balance_list_t *list);
+
+/**
  * @brief Initializes a balance hash table.
  *
- * @return balance_h_t* a NULL pointer
+ * @return balance_ht_t* a NULL pointer
  */
-static balance_h_t *balances_init() { return NULL; }
+static balance_ht_t *balance_ht_init() { return NULL; }
 
 /**
  * @brief Adds a colored balance to the table
@@ -155,17 +164,17 @@ static balance_h_t *balances_init() { return NULL; }
  * @param[in] value The value of the balance
  * @return int o on success
  */
-int balances_add(balance_h_t **t, byte_t const color[], int64_t value);
+int balance_ht_add(balance_ht_t **t, byte_t const color[], int64_t value);
 
 /**
  * @brief Finds a balance by the given color
  *
  * @param[in] t A colored balance hash table
  * @param[in] color The color to find
- * @return balance_h_t* A point to a balance
+ * @return balance_ht_t* A point to a balance
  */
-static balance_h_t *balances_find(balance_h_t **t, byte_t const color[]) {
-  balance_h_t *b;
+static balance_ht_t *balance_ht_find(balance_ht_t **t, byte_t const color[]) {
+  balance_ht_t *b;
   HASH_FIND(hh, *t, color, BALANCE_COLOR_BYTES, b);
   return b;
 };
@@ -176,8 +185,8 @@ static balance_h_t *balances_find(balance_h_t **t, byte_t const color[]) {
  * @param[in] t A colored balance hash table
  * @param[in] color The color for remove
  */
-static void balances_remove(balance_h_t **t, byte_t const color[]) {
-  balance_h_t *elm = balances_find(t, color);
+static void balance_ht_remove(balance_ht_t **t, byte_t const color[]) {
+  balance_ht_t *elm = balance_ht_find(t, color);
   HASH_DEL(*t, elm);
   free(elm);
 }
@@ -188,15 +197,15 @@ static void balances_remove(balance_h_t **t, byte_t const color[]) {
  * @param[in] t A colored balance hash table
  * @return size_t The size of the table
  */
-static size_t balances_count(balance_h_t **t) { return HASH_COUNT(*t); }
+static size_t balance_ht_count(balance_ht_t **t) { return HASH_COUNT(*t); }
 
 /**
  * @brief Destories the colored balance hash table
  *
  * @param[in] t A colored balance hash table
  */
-static void balances_destory(balance_h_t **t) {
-  balance_h_t *curr_elm, *tmp;
+static void balance_ht_destory(balance_ht_t **t) {
+  balance_ht_t *curr_elm, *tmp;
   HASH_ITER(hh, *t, curr_elm, tmp) {
     HASH_DEL(*t, curr_elm);
     free(curr_elm);
@@ -208,7 +217,7 @@ static void balances_destory(balance_h_t **t) {
  *
  * @param[in] t A balance hash table
  */
-void balances_print(balance_h_t **t);
+void balance_ht_print(balance_ht_t **t);
 
 #ifdef __cplusplus
 }

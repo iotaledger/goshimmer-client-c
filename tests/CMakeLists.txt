@@ -18,6 +18,7 @@ test_case_add("client/test_get_funds.c" get_funds)
 test_case_add("core/test_address.c" core_address)
 test_case_add("core/test_balance.c" core_balance)
 test_case_add("core/test_signatures.c" core_ed_signatures)
+test_case_add("core/test_transaction.c" core_transaction)
 
 test_case_add("utils/test_bitmask.c" utils_bitmask)
 

@@ -12,7 +12,7 @@ void test_balance() {
 
   // create a new balance
   balance_init(NULL, 100, &balan);
-  print_balance(&balan);
+  balance_print(&balan);
 
   // convert balance to bytes
   balance_2_bytes(&balan, balance_byte);
@@ -29,7 +29,7 @@ void test_balance() {
 
   balance_set_color(color, &balan);
   TEST_ASSERT_EQUAL_MEMORY(balan.color, color, BALANCE_COLOR_BYTES);
-  print_balance(&balan);
+  balance_print(&balan);
 }
 
 void test_balance_list() {
@@ -70,36 +70,36 @@ void test_balance_list() {
 }
 
 void test_balance_ht() {
-  balance_h_t* table = balances_init();
+  balance_ht_t* table = balance_ht_init();
   TEST_ASSERT_NULL(table);
-  TEST_ASSERT_EQUAL_INT32(0, balances_count(&table));
+  TEST_ASSERT_EQUAL_INT32(0, balance_ht_count(&table));
 
   byte_t color[BALANCE_COLOR_BYTES] = {};
   randombytes_buf((void* const)color, BALANCE_COLOR_BYTES);
 
-  TEST_ASSERT(balances_add(&table, color, -100) == 0);
-  TEST_ASSERT_EQUAL_INT32(1, balances_count(&table));
-  TEST_ASSERT(balances_add(&table, color, 200) == -1);
-  TEST_ASSERT_EQUAL_INT32(1, balances_count(&table));
+  TEST_ASSERT(balance_ht_add(&table, color, -100) == 0);
+  TEST_ASSERT_EQUAL_INT32(1, balance_ht_count(&table));
+  TEST_ASSERT(balance_ht_add(&table, color, 200) == -1);
+  TEST_ASSERT_EQUAL_INT32(1, balance_ht_count(&table));
 
   // randombytes_buf((void* const)color, BALANCE_COLOR_BYTES);
   memset(color, 0, BALANCE_COLOR_BYTES);
-  TEST_ASSERT(balances_add(&table, color, 1000) == 0);
-  TEST_ASSERT_EQUAL_INT32(2, balances_count(&table));
+  TEST_ASSERT(balance_ht_add(&table, color, 1000) == 0);
+  TEST_ASSERT_EQUAL_INT32(2, balance_ht_count(&table));
 
   randombytes_buf((void* const)color, BALANCE_COLOR_BYTES);
-  TEST_ASSERT_NULL(balances_find(&table, color));
-  TEST_ASSERT(balances_add(&table, color, 2000) == 0);
-  TEST_ASSERT_EQUAL_INT32(3, balances_count(&table));
-  balances_print(&table);
+  TEST_ASSERT_NULL(balance_ht_find(&table, color));
+  TEST_ASSERT(balance_ht_add(&table, color, 2000) == 0);
+  TEST_ASSERT_EQUAL_INT32(3, balance_ht_count(&table));
+  balance_ht_print(&table);
 
-  balances_remove(&table, color);
-  TEST_ASSERT_NULL(balances_find(&table, color));
-  TEST_ASSERT_EQUAL_INT32(2, balances_count(&table));
+  balance_ht_remove(&table, color);
+  TEST_ASSERT_NULL(balance_ht_find(&table, color));
+  TEST_ASSERT_EQUAL_INT32(2, balance_ht_count(&table));
 
-  balances_print(&table);
+  balance_ht_print(&table);
 
-  balances_destory(&table);
+  balance_ht_destory(&table);
 }
 
 int main() {

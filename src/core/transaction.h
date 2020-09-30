@@ -9,15 +9,11 @@
 #include "core/types.h"
 #include "utarray.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#define TRANSACTION_ID_BYTES 32
-#define TRANSACTION_ID_BASE58_BUF 48
+#define TX_ID_BYTES 32
+#define TX_ID_BASE58_BUF 48
 // OutputID is the data type that represents the identifier for an Output.
-#define OUTPUT_ID_BYTES (TANGLE_ADDRESS_BYTES + TRANSACTION_ID_BYTES)
-#define OUTPUT_ID_BASE58_LEN 96
+#define TX_OUTPUT_ID_BYTES (TANGLE_ADDRESS_BYTES + TX_ID_BYTES)
+#define TX_OUTPUT_ID_BASE58_BUF 96  // reserves more size than expected
 
 /**
  * @brief A transaction output object
@@ -25,10 +21,11 @@ extern "C" {
  */
 typedef struct {
   byte_t address[TANGLE_ADDRESS_BYTES];
-  balance_t balance;
+  balance_list_t *balances;
 } tx_output_t;
 
-// Inputs represents a list of referenced Output IDs that are used as Inputs in a transaction
+// Inputs represents a list of referenced transaction output IDs(TX_OUTPUT_ID_BYTES) that are used as Inputs in a
+// transaction
 typedef UT_array tx_inputs_t;
 // Outputs represents a list of Outputs that are part of a transaction.
 typedef UT_array tx_outputs_t;
@@ -39,8 +36,29 @@ typedef struct {
   // TODO: signatures
   ed_signature_t *signatures;
   // TODO: payload
+  void *payload;
 } transaction_t;
 
+/**
+ * @brief loops a transaction input list
+ *
+ */
+#define TX_INPUTS_FOREACH(tx_in, output_id)                           \
+  for (output_id = (byte_t *)utarray_front(tx_in); output_id != NULL; \
+       output_id = (byte_t *)utarray_next(tx_in, output_id))
+
+/**
+ * @brief loops a transaction output list
+ *
+ */
+#define TX_OUTPUTS_FOREACH(tx_out, o) \
+  for (o = (tx_output_t *)utarray_front(tx_out); o != NULL; o = (tx_output_t *)utarray_next(tx_out, o))
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// ========== TX ID METHODS ==========
 /**
  * @brief Gets a random transaction id.
  *
@@ -51,41 +69,55 @@ void tx_id_random(byte_t id[]);
 /**
  * @brief Gets a human readable version of the id (base58 encoded).
  *
- * @param[out] str_buf The id string
- * @param[in, out] buf_len The length of string
  * @param[in] id The id in bytes
+ * @param[out] str_buf The id string
+ * @param[out] buf_len The length of string
  * @return true
  * @return false
  */
-bool tx_id_2_base58(char str_buf[], size_t *buf_len, byte_t id[]);
+bool tx_id_2_base58(byte_t id[], char str_buf[], size_t *buf_len);
+
+// ========== TX OUTPUT ID METHODS ==========
 
 /**
- * @brief Gets a random output id from a given address
+ * @brief Gets a random output id for test
  *
- * @param[out] output_id A buffer holds output id
- * @param[in] addr An address in bytes
+ * @param[out] output_id A buffer holds transaction output id
  */
-void tx_output_id_random(byte_t output_id[], byte_t addr[]);
+void tx_output_id_random(byte_t output_id[]);
 
 /**
  * @brief Gets an output id from given address and id.
  *
- * @param[out] output_id A buffer holds output id
  * @param[in] addr An address in bytes
  * @param[in] id An id in bytes
+ * @param[out] output_id A buffer holds output id
  */
-void tx_output_id(byte_t output_id[], byte_t addr[], byte_t id[]);
+void tx_output_id(byte_t addr[], byte_t id[], byte_t output_id[]);
 
 /**
  * @brief Gets a human readable output id (base58 encoded).
  *
- * @param[out] str_buf A buffer holds output id string
- * @param[in, out] buf_len The length of buffer
  * @param[in] output_id An output id
- * @return true
- * @return false
+ * @param[out] str_buf A buffer holds output id string
+ * @param[out] buf_len The length of buffer
+ * @return true On success
+ * @return false On failed
  */
-bool tx_output_id_2_base58(char str_buf[], size_t *buf_len, byte_t output_id[]);
+bool tx_output_id_2_base58(byte_t output_id[], char str_buf[], size_t *buf_len);
+
+/**
+ * @brief Gets a binary output id from base58 encoded string
+ *
+ * @param[in] str_buf A transaction output id string with base58 encoded
+ * @param[in] str_len The length of string
+ * @param[out] output_id A buffer holds binary output id
+ * @return true On success
+ * @return false On failed
+ */
+bool tx_output_id_from_base58(char str_buf[], size_t str_len, byte_t output_id[]);
+
+// ========== TX INPUTS METHODS ==========
 
 /**
  * @brief Allocates a transaction input list object.
@@ -101,6 +133,14 @@ tx_inputs_t *tx_inputs_new();
  * @param[in] output_id An output id to be appended to the list.
  */
 static void tx_inputs_push(tx_inputs_t *tx_in, byte_t output_id[]) { utarray_push_back(tx_in, output_id); }
+
+/**
+ * @brief Appends a base58 ID to the list
+ *
+ * @param[in] tx_in The list object
+ * @param[in] base58 A transaction output ID with base58 encode
+ */
+void tx_inputs_push_base58(tx_inputs_t *tx_in, char base58[]);
 
 /**
  * @brief Gets input list size
@@ -136,13 +176,7 @@ static byte_t *tx_inputs_at(tx_inputs_t *tx_in, size_t index) {
   return (byte_t *)utarray_eltptr(tx_in, index);
 }
 
-/**
- * @brief loops transaction input list
- *
- */
-#define TX_INPUTS_FOREACH(tx_in, output_id)                           \
-  for (output_id = (byte_t *)utarray_front(tx_in); output_id != NULL; \
-       output_id = (byte_t *)utarray_next(tx_in, output_id))
+// ========== TX OUTPUTS METHODS ==========
 
 /**
  * @brief Allocates transaction outputs object
@@ -194,13 +228,6 @@ static tx_output_t *tx_outputs_at(tx_outputs_t *tx_out, size_t index) {
  * @param[in] tx_out An output list.
  */
 void tx_outputs_print(tx_outputs_t *tx_out);
-
-/**
- * @brief loops a transaction output list
- *
- */
-#define TX_OUTPUTS_FOREACH(tx_out, o) \
-  for (o = (tx_output_t *)utarray_front(tx_out); o != NULL; o = (tx_output_t *)utarray_next(tx_out, o))
 
 #ifdef __cplusplus
 }
