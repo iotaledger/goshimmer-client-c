@@ -92,6 +92,14 @@ bool balance_color_2_base58(byte_t color[], char color_str[]);
 void balance_print(balance_t *balance);
 
 /**
+ * @brief Duplicates a balance object
+ *
+ * @param[in] src A balance object
+ * @return balance_t*
+ */
+balance_t *balance_clone(balance_t *src);
+
+/**
  * @brief Allocates a balance list object.
  *
  * @return balance_list_t* a pointer to a balance list object
@@ -148,6 +156,14 @@ static void balance_list_free(balance_list_t *list) { utarray_free(list); }
  * @param[in] list A balance list
  */
 void balance_list_print(balance_list_t *list);
+
+/**
+ * @brief Duplicates a balance list
+ *
+ * @param[in] src A balance list object
+ * @return balance_list_t*
+ */
+balance_list_t *balance_list_clone(balance_list_t *src);
 
 /**
  * @brief Initializes a balance hash table.

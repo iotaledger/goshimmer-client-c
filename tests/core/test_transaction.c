@@ -6,10 +6,10 @@
 void test_tx_inputs() {
   byte_t tx_output_id[TX_OUTPUT_ID_BYTES];
   char output_id_str[TX_OUTPUT_ID_BASE58_BUF];
-  char const *const expected_id =
+  char const* const expected_id =
       "ALC5JTNWc3dxeF4gwiCHnLEPTATbXt3pX2HxoGqV15WWYNXdFV7skxqm7Zs5vh6zpf7DeqAE9qs83sd8ZftQ6dEQ";
 
-  tx_inputs_t *ins = tx_inputs_new();
+  tx_inputs_t* ins = tx_inputs_new();
   TEST_ASSERT_NOT_NULL(ins);
 
   // creates a random id and push to the list
@@ -22,7 +22,7 @@ void test_tx_inputs() {
   TEST_ASSERT_EQUAL_INT32(2, tx_inputs_len(ins));
 
   // checks out of range
-  byte_t *elm = tx_inputs_at(ins, 5);
+  byte_t* elm = tx_inputs_at(ins, 5);
   TEST_ASSERT_NULL(elm);
 
   // should be equal to the ramdon id
@@ -41,10 +41,68 @@ void test_tx_inputs() {
   tx_inputs_free(ins);
 }
 
+void test_tx_output_list() {
+  // creaeting an output list
+  tx_outputs_t* output_list = tx_outputs_new();
+  TEST_ASSERT_NOT_NULL(output_list);
+  TEST_ASSERT(tx_outputs_len(output_list) == 0);
+
+  // creating an output element
+  tx_output_t out = {};
+  // random address
+  randombytes_buf((void* const)out.address, TANGLE_ADDRESS_BYTES);
+  TEST_ASSERT_NULL(out.balances);
+
+  // creating a balance 100 with empty color
+  balance_t balance = {};
+  balance.value = 100;
+
+  // creating a balance list and push a balance element
+  out.balances = balance_list_new();
+  TEST_ASSERT_NOT_NULL(out.balances);
+  TEST_ASSERT(balance_list_len(out.balances) == 0);
+  // adding 1st balance element
+  balance_list_push(out.balances, &balance);
+  TEST_ASSERT(balance_list_len(out.balances) == 1);
+
+  // adding 2nd balance element with random color
+  balance.value = 200;
+  randombytes_buf((void* const)balance.color, BALANCE_COLOR_BYTES);
+  balance_list_push(out.balances, &balance);
+  TEST_ASSERT(balance_list_len(out.balances) == 2);
+
+  // adding 1st output to the output list
+  tx_outputs_push(output_list, &out);
+  TEST_ASSERT(tx_outputs_len(output_list) == 1);
+
+  // adding 2nd output to the output list
+  tx_outputs_push(output_list, &out);
+  TEST_ASSERT(tx_outputs_len(output_list) == 2);
+
+  // out of range
+  tx_output_t* elm = tx_outputs_at(output_list, 100);
+  TEST_ASSERT_NULL(elm);
+
+  // validating 1st output and 2nd balance
+  elm = tx_outputs_at(output_list, 0);
+  TEST_ASSERT_NOT_NULL(elm);
+  TEST_ASSERT_EQUAL_MEMORY(out.address, elm->address, TANGLE_ADDRESS_BYTES);
+  balance_t* elm_balance = balance_list_at(elm->balances, 1);
+  TEST_ASSERT_EQUAL_MEMORY(balance.color, elm_balance->color, BALANCE_COLOR_BYTES);
+  TEST_ASSERT(balance.value == elm_balance->value);
+
+  tx_outputs_print(output_list);
+
+  // clean up
+  balance_list_free(out.balances);
+  tx_outputs_free(output_list);
+}
+
 int main() {
   UNITY_BEGIN();
 
   RUN_TEST(test_tx_inputs);
+  RUN_TEST(test_tx_output_list);
 
   return UNITY_END();
 }

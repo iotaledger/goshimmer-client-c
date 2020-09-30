@@ -62,6 +62,17 @@ void balance_print(balance_t* balance) {
   }
 }
 
+balance_t* balance_clone(balance_t* src) {
+  balance_t* dst = malloc(sizeof(balance_t));
+  if (dst == NULL) {
+    printf("[%s:%d] OOM\n", __func__, __LINE__);
+    return NULL;
+  }
+  dst->value = src->value;
+  memcpy(dst->color, src->color, BALANCE_COLOR_BYTES);
+  return dst;
+}
+
 balance_list_t* balance_list_new() {
   balance_list_t* list = NULL;
   utarray_new(list, &balance_list_icd);
@@ -72,6 +83,18 @@ void balance_list_print(balance_list_t* list) {
   balance_t* elm = NULL;
 
   BALANCE_LIST_FOREACH(list, elm) { balance_print(elm); }
+}
+
+balance_list_t* balance_list_clone(balance_list_t* src) {
+  balance_t* elm = NULL;
+  balance_list_t* dst = balance_list_new();
+  if (dst == NULL) {
+    printf("[%s:%d] OOM\n", __func__, __LINE__);
+    return NULL;
+  }
+
+  BALANCE_LIST_FOREACH(src, elm) { balance_list_push(dst, elm); }
+  return dst;
 }
 
 int balance_ht_add(balance_ht_t** t, byte_t const color[], int64_t value) {

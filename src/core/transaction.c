@@ -4,7 +4,23 @@
 #include "libbase58.h"
 
 static UT_icd const ut_inputs_icd = {sizeof(byte_t) * TX_OUTPUT_ID_BYTES, NULL, NULL, NULL};
-static UT_icd const ut_outputs_icd = {sizeof(tx_output_t), NULL, NULL, NULL};
+
+static void outputs_icd_copy(void *_dst, void const *_src) {
+  tx_output_t *dst = (tx_output_t *)_dst;
+  tx_output_t *src = (tx_output_t *)_src;
+  memcpy(dst->address, src->address, TANGLE_ADDRESS_BYTES);
+  dst->balances = balance_list_clone(src->balances);
+  if (dst->balances == NULL) {
+    printf("[%s:%d] clone balance list failed\n", __func__, __LINE__);
+  }
+}
+
+static void outputs_icd_dtor(void *_elm) {
+  tx_output_t *elm = (tx_output_t *)_elm;
+  balance_list_free(elm->balances);
+}
+
+static UT_icd const ut_outputs_icd = {sizeof(tx_output_t), NULL, outputs_icd_copy, outputs_icd_dtor};
 
 void tx_id_random(byte_t id[]) { randombytes_buf((void *const)id, TX_ID_BYTES); }
 
