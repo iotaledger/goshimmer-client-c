@@ -35,14 +35,6 @@ extern "C" {
 #endif
 
 /**
- * @brief printf byte_t data in hex
- *
- * @param[in] data A byte_t buffer
- * @param[in] len The length of data
- */
-void dump_hex(byte_t const data[], size_t len);
-
-/**
  * @brief Gets a random seed.
  *
  * @param[out] seed An output seed
@@ -120,29 +112,17 @@ void address_ed25519_keypair(byte_t const seed[], uint64_t index, byte_t pub[], 
  */
 void sign_signature(byte_t const seed[], uint64_t index, byte_t const data[], uint64_t data_len, byte_t signature[]);
 
-// /**
-//  * @brief Validates signature
-//  *
-//  * @param[in] seed The seed
-//  * @param[in] index An address index
-//  * @param[in] signature The signature
-//  * @param[in] data The expected data
-//  * @param[in] data_len The length of data
-//  * @return true on success
-//  * @return false on failed
-//  */
-// bool sign_verify_signature(byte_t const seed[], uint64_t index, byte_t signature[], byte_t const data[],
-//                            size_t data_len);
-
-bool sign_verify_signature(byte_t signature[], byte_t const data[], size_t data_len, byte_t pub_key[]);
-
 /**
- * @brief print out hexmal value in a byte array.
+ * @brief Validates signature by given data and public key
  *
- * @param[in] data A byte array.
- * @param[in] len The size of the byte array.
+ * @param[in] signature The ed25519 signature
+ * @param[in] data The data
+ * @param[in] data_len The length of the data
+ * @param[in] pub_key A public key
+ * @return true Valid signature
+ * @return false Invalid signature
  */
-void dump_hex(byte_t const data[], size_t len);
+bool sign_verify_signature(byte_t signature[], byte_t const data[], size_t data_len, byte_t pub_key[]);
 
 /**
  * @brief Allocates an address list object.

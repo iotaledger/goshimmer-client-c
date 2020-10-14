@@ -8,6 +8,7 @@ byte_buf_t* byte_buf_new() {
   if (buf) {
     buf->data = NULL;
     buf->len = 0;
+    buf->cap = 0;
   }
   return buf;
 }
@@ -23,6 +24,7 @@ byte_buf_t* byte_buf_new_with_data(byte_t data[], size_t len) {
     if (buf->data) {
       memcpy(buf->data, data, len);
       buf->len = len;
+      buf->cap = len;
     } else {
       // Out of Memory
       free(buf);
@@ -32,25 +34,53 @@ byte_buf_t* byte_buf_new_with_data(byte_t data[], size_t len) {
   return buf;
 }
 
-bool byte_buf_append(byte_buf_t* buf, byte_t data[], size_t len) {
+bool byte_buf_set(byte_buf_t* buf, byte_t const data[], size_t len) {
   if (data == NULL || buf == NULL) {
     return false;
   }
 
-  if (buf->data == NULL) {
-    buf->data = malloc(len);
-    buf->len = 0;
-  } else {
-    buf->data = realloc(buf->data, buf->len + len);
-  }
-
-  if (buf->data == NULL) {
-    // Out of memory
+  if (byte_buf_reserve(buf, len) == false) {
     return false;
   }
 
-  memcpy(&(buf->data[buf->len]), data, len);
+  memcpy(buf->data, data, len);
+  buf->len = len;
+  return true;
+}
+
+bool byte_buf_append(byte_buf_t* buf, byte_t const data[], size_t len) {
+  if (data == NULL || buf == NULL) {
+    return false;
+  }
+  // needed capacity
+  size_t needed_cap = buf->len + len;
+
+  if (byte_buf_reserve(buf, needed_cap) == false) {
+    return false;
+  }
+
+  // copy data to buffer
+  memcpy(buf->data + buf->len, data, len);
   buf->len += len;
+  return true;
+}
+
+bool byte_buf_reserve(byte_buf_t* buf, size_t len) {
+  if (!buf) {
+    return false;
+  }
+
+  if (buf->cap >= len) {
+    // capacity is bigger than the requested size.
+    return true;
+  }
+
+  byte_t* new_buf = realloc(buf->data, len);
+  if (new_buf == NULL) {
+    return false;
+  }
+  buf->data = new_buf;
+  buf->cap = len;
   return true;
 }
 
@@ -60,16 +90,16 @@ void byte_buf_free(byte_buf_t* buf) {
       free(buf->data);
     }
     buf->len = 0;
+    buf->cap = 0;
     free(buf);
   }
 }
 
 void byte_buf2str(byte_buf_t* buf) {
+  byte_t null_char = '\0';
   if (buf && buf->data) {
-    if (buf->data[buf->len - 1] != '\0') {
-      buf->data = realloc(buf->data, buf->len + 1);
-      buf->data[buf->len] = '\0';
-      buf->len += 1;
+    if (buf->data[buf->len - 1] != null_char) {
+      byte_buf_append(buf, &null_char, 1);
     }
   }
 }
@@ -81,6 +111,7 @@ byte_buf_t* byte_buf_clonen(byte_buf_t* buf, size_t len) {
   }
 
   clone->len = len;
+  clone->cap = len;
   clone->data = malloc(buf->len);
   if (!clone->data) {
     free(clone);
@@ -89,4 +120,9 @@ byte_buf_t* byte_buf_clonen(byte_buf_t* buf, size_t len) {
 
   memcpy(clone->data, buf->data, len);
   return clone;
+}
+
+void byte_buf_print(byte_buf_t* buf) {
+  printf("byte_buf: cap = %zu, len = %zu\n", buf->cap, buf->len);
+  dump_hex(buf->data, buf->len);
 }

@@ -8,6 +8,7 @@
 
 typedef struct {
   size_t len;
+  size_t cap;
   byte_t* data;
 } byte_buf_t;
 
@@ -37,10 +38,21 @@ byte_buf_t* byte_buf_new_with_data(byte_t data[], size_t len);
  * @param[in] buf A buffer object
  * @param[in] data The data for appending
  * @param[in] len The size of data
- * @return true
- * @return false
+ * @return true On success
+ * @return false On failed
  */
-bool byte_buf_append(byte_buf_t* buf, byte_t data[], size_t len);
+bool byte_buf_append(byte_buf_t* buf, byte_t const data[], size_t len);
+
+/**
+ * @brief Sets data to the buffer
+ *
+ * @param[in] buf A buffer object
+ * @param[in] data The data to set
+ * @param[in] len The length of data
+ * @return true On success
+ * @return false On failed
+ */
+bool byte_buf_set(byte_buf_t* buf, byte_t const data[], size_t len);
 
 /**
  * @brief Frees data buffer
@@ -59,6 +71,10 @@ void byte_buf2str(byte_buf_t* buf);
 byte_buf_t* byte_buf_clonen(byte_buf_t* buf, size_t length);
 
 static byte_buf_t* byte_buf_clone(byte_buf_t* buf) { return byte_buf_clonen(buf, buf->len); };
+
+bool byte_buf_reserve(byte_buf_t* buf, size_t len);
+
+void byte_buf_print(byte_buf_t* buf);
 
 #ifdef __cplusplus
 }

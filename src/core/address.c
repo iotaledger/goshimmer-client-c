@@ -25,13 +25,6 @@ static void address_from_ed25519(byte_t const seed[], uint64_t index, byte_t add
   memcpy((void *)(addr_out + 1), digest, digest_len);
 }
 
-void dump_hex(byte_t const data[], size_t len) {
-  for (int i = 0; i < len; i++) {
-    printf("0x%x, ", data[i]);
-  }
-  printf("\n");
-}
-
 /**
  * @brief hexadecimal text to a string, ex: "48656c6c6f" -> "Hello"
  *

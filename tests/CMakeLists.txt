@@ -21,5 +21,6 @@ test_case_add("core/test_signatures.c" core_ed_signatures)
 test_case_add("core/test_transaction.c" core_transaction)
 
 test_case_add("utils/test_bitmask.c" utils_bitmask)
+test_case_add("utils/test_byte_buf.c" utils_byte_buffer)
 
 test_case_add("wallet/test_wallet_api.c" wallet_api)
