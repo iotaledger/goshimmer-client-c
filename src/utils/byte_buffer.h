@@ -68,13 +68,47 @@ void byte_buf_free(byte_buf_t* buf);
  */
 void byte_buf2str(byte_buf_t* buf);
 
+/**
+ * @brief Duplicates N bytes from buffer
+ *
+ * @param[in] buf A byte buffer
+ * @param[in] length The cloned length
+ * @return byte_buf_t*
+ */
 byte_buf_t* byte_buf_clonen(byte_buf_t* buf, size_t length);
 
+/**
+ * @brief Duplicates a byte buffer
+ *
+ * @param[in] buf A byte buffer
+ * @return byte_buf_t*
+ */
 static byte_buf_t* byte_buf_clone(byte_buf_t* buf) { return byte_buf_clonen(buf, buf->len); };
 
+/**
+ * @brief Changes the buffer capacity
+ *
+ * @param[in] buf A byte buffer
+ * @param[in] len The expect size of this buffer
+ * @return true On success
+ * @return false On failed
+ */
 bool byte_buf_reserve(byte_buf_t* buf, size_t len);
 
+/**
+ * @brief Dumps buffer infomation for debug propose
+ *
+ * @param[in] buf A byte buffer
+ */
 void byte_buf_print(byte_buf_t* buf);
+
+/**
+ * @brief Duplicates and converts the data from bin to hex string, the returned object need to be freed.
+ *
+ * @param[in] buf A byte buffer
+ * @return byte_buf_t*
+ */
+byte_buf_t* byte_buf2hex_string(byte_buf_t* buf);
 
 #ifdef __cplusplus
 }

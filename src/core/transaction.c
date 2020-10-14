@@ -111,6 +111,7 @@ byte_buf_t *tx_essence(transaction_t *tx) {
   // TODO: add payload size to essence_bytes
 
   essence->data = malloc(essence->len);
+  essence->cap = essence->len;
   if (essence->data == NULL) {
     printf("[%s:%d] OOM\n", __func__, __LINE__);
     byte_buf_free(essence);
@@ -198,4 +199,55 @@ bool tx_signautres_valid(transaction_t *tx) {
     }
   }
   return true;
+}
+
+void tx_print(transaction_t *tx) {
+  if (tx == NULL) {
+    printf("tx: {}n");
+    return;
+  } else {
+    printf("tx: {\n");
+  }
+
+  if (tx->inputs) {
+    tx_inputs_print(tx->inputs);
+  } else {
+    printf("inputs: []\n");
+  }
+
+  if (tx->outputs) {
+    tx_outputs_print(tx->outputs);
+  } else {
+    printf("outputs: []\n");
+  }
+
+  if (tx->signatures) {
+    ed_signatures_print(&tx->signatures);
+  } else {
+    printf("signatures: []\n");
+  }
+  printf("}\n");
+}
+
+byte_buf_t *tx_2_bytes_string(transaction_t *tx) {
+  byte_buf_t *bytes = tx_essence(tx);
+  byte_t addr_version = 1;  // ed25519 scheme
+  size_t signature_bytes = ed_signatures_count(&tx->signatures) * (1 + ED_PUBLIC_KEY_BYTES + ED_SIGNATURE_BYTES);
+  size_t tx_bytes_len = bytes->len + signature_bytes + 1;
+  byte_buf_reserve(bytes, tx_bytes_len);
+
+  ed_signature_t *elm, *tmp;
+  HASH_ITER(hh, tx->signatures, elm, tmp) {
+    byte_buf_append(bytes, &addr_version, 1);
+    byte_buf_append(bytes, elm->pub_key, ED_PUBLIC_KEY_BYTES);
+    byte_buf_append(bytes, elm->signature, ED_SIGNATURE_BYTES);
+  }
+  // trailing 0 to indicate the end of signatures
+  byte_t end = 0x0;
+  byte_buf_append(bytes, &end, 1);
+  // bin to hex string
+  byte_buf_t *str = byte_buf2hex_string(bytes);
+  // clean up
+  byte_buf_free(bytes);
+  return str;
 }

@@ -104,6 +104,19 @@ void byte_buf2str(byte_buf_t* buf) {
   }
 }
 
+byte_buf_t* byte_buf2hex_string(byte_buf_t* buf) {
+  char const* hex_table = "0123456789ABCDEF";
+  byte_buf_t* hex_str = byte_buf_new();
+  byte_buf_reserve(hex_str, (buf->len * 2) + 1);
+  for (size_t i = 0; i < buf->len; i++) {
+    hex_str->data[i * 2 + 0] = hex_table[(buf->data[i] >> 4) & 0x0F];
+    hex_str->data[i * 2 + 1] = hex_table[(buf->data[i]) & 0x0F];
+    hex_str->len += 2;
+  }
+  hex_str->data[hex_str->len] = '\0';
+  return hex_str;
+}
+
 byte_buf_t* byte_buf_clonen(byte_buf_t* buf, size_t len) {
   byte_buf_t* clone = malloc(sizeof(byte_buf_t));
   if (!clone) {

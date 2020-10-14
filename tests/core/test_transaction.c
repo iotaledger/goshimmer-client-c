@@ -99,7 +99,6 @@ void test_tx_output_list() {
 
 void test_tx_empty_payload() {
   transaction_t tx = {};
-
   // seed
   byte_t my_seed[TANGLE_SEED_BYTES];
   seed_from_base58("332Db2RL4NHggDX4utnn5sCwTVTqUQJ3vC42TGZFC8hK", my_seed);
@@ -152,11 +151,19 @@ void test_tx_empty_payload() {
   // validate tx
   TEST_ASSERT_TRUE(tx_signautres_valid(&tx));
 
+  // dump tx object
+  tx_print(&tx);
+
+  byte_buf_t* s = tx_2_bytes_string(&tx);
+  // dump tx byte string
+  printf("%s\n", s->data);
+
   // clean up
   tx_inputs_free(tx.inputs);
   tx_outputs_free(tx.outputs);
   byte_buf_free(essence);
   ed_signatures_destory(&tx.signatures);
+  byte_buf_free(s);
 }
 
 int main() {

@@ -248,6 +248,21 @@ byte_buf_t *tx_essence(transaction_t *tx);
  */
 bool tx_signautres_valid(transaction_t *tx);
 
+/**
+ * @brief prints out a transaction object
+ *
+ * @param[in] tx A transaction object
+ */
+void tx_print(transaction_t *tx);
+
+/**
+ * @brief Gets transaction in hex string format.
+ *
+ * @param[in] tx A transaction object
+ * @return byte_buf_t*
+ */
+byte_buf_t *tx_2_bytes_string(transaction_t *tx);
+
 #ifdef __cplusplus
 }
 #endif
