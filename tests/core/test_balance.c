@@ -57,6 +57,8 @@ void test_balance_list() {
   TEST_ASSERT_EQUAL_MEMORY(color, b->color, BALANCE_COLOR_BYTES);
   TEST_ASSERT_EQUAL_INT32(200, b->value);
 
+  balance_list_print(list);
+
   balance_list_pop(list);
   TEST_ASSERT(balance_list_len(list) == 1);
   b = balance_list_at(list, 1);

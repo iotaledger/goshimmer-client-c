@@ -6,8 +6,7 @@
 void test_tx_inputs() {
   byte_t tx_output_id[TX_OUTPUT_ID_BYTES];
   char output_id_str[TX_OUTPUT_ID_BASE58_BUF];
-  char const* const expected_id =
-      "ALC5JTNWc3dxeF4gwiCHnLEPTATbXt3pX2HxoGqV15WWYNXdFV7skxqm7Zs5vh6zpf7DeqAE9qs83sd8ZftQ6dEQ";
+  char* const expected_id = "ALC5JTNWc3dxeF4gwiCHnLEPTATbXt3pX2HxoGqV15WWYNXdFV7skxqm7Zs5vh6zpf7DeqAE9qs83sd8ZftQ6dEQ";
 
   tx_inputs_t* ins = tx_inputs_new();
   TEST_ASSERT_NOT_NULL(ins);
@@ -42,7 +41,7 @@ void test_tx_inputs() {
 }
 
 void test_tx_output_list() {
-  // creaeting an output list
+  // creating an output list
   tx_outputs_t* output_list = tx_outputs_new();
   TEST_ASSERT_NOT_NULL(output_list);
   TEST_ASSERT(tx_outputs_len(output_list) == 0);
@@ -98,11 +97,74 @@ void test_tx_output_list() {
   tx_outputs_free(output_list);
 }
 
+void test_tx_empty_payload() {
+  transaction_t tx = {};
+
+  // seed
+  byte_t my_seed[TANGLE_SEED_BYTES];
+  seed_from_base58("332Db2RL4NHggDX4utnn5sCwTVTqUQJ3vC42TGZFC8hK", my_seed);
+
+  // address
+  byte_t addr_0[TANGLE_ADDRESS_BYTES];
+  address_get(my_seed, 0, ADDRESS_VER_ED25519, addr_0);
+
+  // add inputs
+  tx.inputs = tx_inputs_new();
+  byte_t tx_id[TX_ID_BYTES];
+  byte_t output_id[TX_OUTPUT_ID_BYTES];
+  tx_id_random(tx_id);
+  tx_output_id(addr_0, tx_id, output_id);
+  tx_inputs_push(tx.inputs, output_id);
+
+  // add outputs
+  tx.outputs = tx_outputs_new();
+  tx_output_t out = {};
+  memcpy(out.address, addr_0, TANGLE_ADDRESS_BYTES);
+  // creating a balance 1 with empty color
+  balance_t balance = {};
+  balance_init(NULL, 1, &balance);
+  // creating a balance list and push a balance element
+  out.balances = balance_list_new();
+  TEST_ASSERT_NOT_NULL(out.balances);
+  TEST_ASSERT(balance_list_len(out.balances) == 0);
+  // adding 1st balance element
+  balance_list_push(out.balances, &balance);
+  TEST_ASSERT(balance_list_len(out.balances) == 1);
+  tx_outputs_push(tx.outputs, &out);
+
+  // clean up balance list
+  balance_list_free(out.balances);
+
+  // calculate essence of the transaction
+  byte_buf_t* essence = tx_essence(&tx);
+
+  // get signature
+  byte_t addr_pub[ED_PUBLIC_KEY_BYTES];
+  byte_t addr_priv[ED_PRIVATE_KEY_BYTES];
+  byte_t addr_sig[ED_SIGNATURE_BYTES];
+  sign_signature(my_seed, 0, essence->data, essence->len, addr_sig);
+  address_ed25519_keypair(my_seed, 0, addr_pub, addr_priv);
+
+  // add signature to the transaction
+  tx.signatures = ed_signatures_init();
+  TEST_ASSERT(ed_signatures_add(&tx.signatures, addr_0, addr_pub, addr_sig) == 0);
+
+  // validate tx
+  TEST_ASSERT_TRUE(tx_signautres_valid(&tx));
+
+  // clean up
+  tx_inputs_free(tx.inputs);
+  tx_outputs_free(tx.outputs);
+  byte_buf_free(essence);
+  ed_signatures_destory(&tx.signatures);
+}
+
 int main() {
   UNITY_BEGIN();
 
   RUN_TEST(test_tx_inputs);
   RUN_TEST(test_tx_output_list);
+  RUN_TEST(test_tx_empty_payload);
 
   return UNITY_END();
 }

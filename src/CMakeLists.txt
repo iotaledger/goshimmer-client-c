@@ -18,6 +18,7 @@ target_sources(
           "core/transaction.c"
           "utils/iota_str.c"
           "utils/bitmask.c"
+          "utils/byte_buffer.c"
           "wallet/address_manager.c"
           "wallet/wallet.c"
   PUBLIC "client/api/get_node_info.h"
@@ -32,6 +33,7 @@ target_sources(
          "core/transaction.h"
          "utils/iota_str.h"
          "utils/bitmask.h"
+         "utils/byte_buffer.h"
          "wallet/address_manager.h"
          "wallet/wallet.h"
 )

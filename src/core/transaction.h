@@ -8,6 +8,7 @@
 #include "core/signatures.h"
 #include "core/types.h"
 #include "utarray.h"
+#include "utils/byte_buffer.h"
 
 #define TX_ID_BYTES 32
 #define TX_ID_BASE58_BUF 48
@@ -33,8 +34,9 @@ typedef UT_array tx_outputs_t;
 typedef struct {
   tx_inputs_t *inputs;
   tx_outputs_t *outputs;
-  // TODO: signatures
+  // TODO: signature scheme
   ed_signature_t *signatures;
+  // byte_t tx_id[TX_ID_BYTES];
   // TODO: payload
   void *payload;
 } transaction_t;
@@ -228,6 +230,23 @@ static tx_output_t *tx_outputs_at(tx_outputs_t *tx_out, size_t index) {
  * @param[in] tx_out An output list.
  */
 void tx_outputs_print(tx_outputs_t *tx_out);
+
+/**
+ * @brief Retruns transaction essence
+ *
+ * @param[in] tx A transaction object
+ * @return byte_buf_t*
+ */
+byte_buf_t *tx_essence(transaction_t *tx);
+
+/**
+ * @brief returns true if the signatures in this transaction are valid
+ *
+ * @param[in] tx A transaction object
+ * @return true
+ * @return false
+ */
+bool tx_signautres_valid(transaction_t *tx);
 
 #ifdef __cplusplus
 }

@@ -62,4 +62,4 @@ addr_list_t* wallet_unspent_addresses(wallet_t* w) { return am_unspent_addresses
 
 addr_list_t* wallet_spent_addresses(wallet_t* const w) { return am_spent_addresses(w->addr_manager); }
 
-int wallet_unspent_outputs(wallet_t* w, send_funds_op_t* opt) {}
+int wallet_unspent_outputs(wallet_t* w, send_funds_op_t* opt) { return -1; }

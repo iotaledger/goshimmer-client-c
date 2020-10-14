@@ -54,11 +54,10 @@ void random_seed(byte_t seed[]);
  *
  * @param[in] seed The seed in bytes
  * @param[out] str_buf The seed string
- * @param[in] buf_len The len of string
  * @return true
  * @return false
  */
-bool seed_2_base58(byte_t const seed[], char str_buf[], size_t *buf_len);
+bool seed_2_base58(byte_t const seed[], char str_buf[]);
 
 /**
  * @brief Gets seed bytes from a human readable seed string.
@@ -101,6 +100,16 @@ bool address_2_base58(byte_t const address[], char str_buf[]);
 bool address_from_base58(char const base58_str[], byte_t addr[]);
 
 /**
+ * @brief Gets address keypair
+ *
+ * @param[in] seed The seed
+ * @param[in] index The index of an address
+ * @param[out] pub The public key of the address
+ * @param[out] priv The private key of the address
+ */
+void address_ed25519_keypair(byte_t const seed[], uint64_t index, byte_t pub[], byte_t priv[]);
+
+/**
  * @brief signs data/message and returns the signature.
  *
  * @param[in] seed The seed
@@ -111,19 +120,21 @@ bool address_from_base58(char const base58_str[], byte_t addr[]);
  */
 void sign_signature(byte_t const seed[], uint64_t index, byte_t const data[], uint64_t data_len, byte_t signature[]);
 
-/**
- * @brief Validates signature
- *
- * @param[in] seed The seed
- * @param[in] index An address index
- * @param[in] signature The signature
- * @param[in] data The expected data
- * @param[in] data_len The length of data
- * @return true on success
- * @return false on failed
- */
-bool sign_verify_signature(byte_t const seed[], uint64_t index, byte_t signature[], byte_t const data[],
-                           size_t data_len);
+// /**
+//  * @brief Validates signature
+//  *
+//  * @param[in] seed The seed
+//  * @param[in] index An address index
+//  * @param[in] signature The signature
+//  * @param[in] data The expected data
+//  * @param[in] data_len The length of data
+//  * @return true on success
+//  * @return false on failed
+//  */
+// bool sign_verify_signature(byte_t const seed[], uint64_t index, byte_t signature[], byte_t const data[],
+//                            size_t data_len);
+
+bool sign_verify_signature(byte_t signature[], byte_t const data[], size_t data_len, byte_t pub_key[]);
 
 /**
  * @brief print out hexmal value in a byte array.

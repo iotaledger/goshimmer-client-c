@@ -89,3 +89,113 @@ void tx_outputs_print(tx_outputs_t *tx_out) {
   }
   printf("]\n");
 }
+
+byte_buf_t *tx_essence(transaction_t *tx) {
+  byte_buf_t *essence = byte_buf_new();
+  // size_t essence_bytes = 0;
+
+  // inputs bytes
+  essence->len = sizeof(uint32_t);
+  essence->len += tx_inputs_len(tx->inputs) * TX_OUTPUT_ID_BYTES;
+  // output bytes
+  essence->len += sizeof(uint32_t);
+  tx_output_t *out_elm = NULL;
+  TX_OUTPUTS_FOREACH(tx->outputs, out_elm) {
+    essence->len += TANGLE_ADDRESS_BYTES;
+    // balance bytes
+    essence->len += sizeof(uint32_t);
+    essence->len += balance_list_len(out_elm->balances) * (sizeof(int64_t) + BALANCE_COLOR_BYTES);
+  }
+  // data payload bytes
+  essence->len += sizeof(uint32_t);
+  // TODO: add payload size to essence_bytes
+
+  essence->data = malloc(essence->len);
+  if (essence->data == NULL) {
+    printf("[%s:%d] OOM\n", __func__, __LINE__);
+    byte_buf_free(essence);
+    return NULL;
+  }
+
+  if (is_little_endian()) {
+    size_t offset = 0;
+    // input size
+    uint32_t u32_v = tx_inputs_len(tx->inputs);
+    byte_t *b = NULL;
+    memcpy(essence->data, &u32_v, sizeof(u32_v));
+    offset += sizeof(u32_v);
+    // inputs size
+    TX_INPUTS_FOREACH(tx->inputs, b) {
+      memcpy(essence->data + offset, b, TX_OUTPUT_ID_BYTES);
+      offset += TX_OUTPUT_ID_BYTES;
+    }
+
+    // output size
+    u32_v = tx_outputs_len(tx->outputs);
+    memcpy(essence->data + offset, &u32_v, sizeof(u32_v));
+    offset += sizeof(u32_v);
+
+    // outputs
+    out_elm = NULL;
+    TX_OUTPUTS_FOREACH(tx->outputs, out_elm) {
+      memcpy(essence->data + offset, out_elm->address, TANGLE_ADDRESS_BYTES);
+      offset += TANGLE_ADDRESS_BYTES;
+
+      // balance bytes
+      u32_v = balance_list_len(out_elm->balances);
+      memcpy(essence->data + offset, &u32_v, sizeof(uint32_t));
+      offset += sizeof(uint32_t);
+      balance_t *balance = NULL;
+      BALANCE_LIST_FOREACH(out_elm->balances, balance) {
+        memcpy(essence->data + offset, &balance->value, sizeof(int64_t));
+        offset += sizeof(balance->value);
+        memcpy(essence->data + offset, balance->color, BALANCE_COLOR_BYTES);
+        offset += BALANCE_COLOR_BYTES;
+      }
+    }
+
+    // payload
+    memset(essence->data + offset, 0, sizeof(uint32_t));
+    offset += sizeof(uint32_t);
+
+    if (offset != essence->len) {
+      printf("[%s:%d] unexpected length of essence\n", __func__, __LINE__);
+    }
+
+    return essence;
+
+  } else {
+    // TODO
+    return NULL;
+  }
+
+  return NULL;
+}
+
+bool tx_signautres_valid(transaction_t *tx) {
+  if (tx->inputs == NULL || tx->signatures == NULL) {
+    return false;
+  }
+
+  byte_t *input = NULL;
+  ed_signature_t *sig = NULL;
+  // byte_t tmp_addr[TANGLE_ADDRESS_BYTES];
+  TX_INPUTS_FOREACH(tx->inputs, input) {
+    // is address in signature table?
+    sig = ed_signatures_find(&tx->signatures, input);
+    if (sig == NULL) {
+      return false;
+    }
+
+    // is signature valid?
+    byte_buf_t *essence = tx_essence(tx);
+    if (essence) {
+      if (sign_verify_signature(sig->signature, essence->data, essence->len, sig->pub_key) == false) {
+        byte_buf_free(essence);
+        return false;
+      }
+      byte_buf_free(essence);
+    }
+  }
+  return true;
+}

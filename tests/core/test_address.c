@@ -10,8 +10,7 @@ void test_address_gen() {
   char ed25519_addr_str[TANGLE_ADDRESS_BASE58_BUF] = {};
   // random_seed(iota_seed);
   TEST_ASSERT_TRUE(seed_from_base58("332Db2RL4NHggDX4utnn5sCwTVTqUQJ3vC42TGZFC8hK", iota_seed));
-  size_t len = TANGLE_ADDRESS_BASE58_BUF;
-  TEST_ASSERT_TRUE(seed_2_base58(iota_seed, seed_str, &len));
+  TEST_ASSERT_TRUE(seed_2_base58(iota_seed, seed_str));
   TEST_ASSERT_EQUAL_STRING("332Db2RL4NHggDX4utnn5sCwTVTqUQJ3vC42TGZFC8hK", seed_str);
 
   address_get(iota_seed, 0, ADDRESS_VER_ED25519, ed25519_addr);
@@ -30,7 +29,20 @@ void test_address_gen() {
   sign_signature(iota_seed, 7, data, data_len, signature);
   // printf("sign: ");
   // dump_hex(signature, ED_SIGNATURE_BYTES + data_len);
-  TEST_ASSERT_TRUE(sign_verify_signature(iota_seed, 7, signature, data, data_len));
+  // TEST_ASSERT_TRUE(sign_verify_signature(iota_seed, 7, signature, data, data_len));
+
+  byte_t addr_pub[ED_PUBLIC_KEY_BYTES];
+  byte_t addr_priv[ED_PRIVATE_KEY_BYTES];
+  address_ed25519_keypair(iota_seed, 7, addr_pub, addr_priv);
+  TEST_ASSERT_TRUE(sign_verify_signature(signature, data, data_len, addr_pub));
+}
+
+void test_address_conv() {
+  byte_t ed25519_addr[TANGLE_ADDRESS_BYTES] = {};
+  char addr_base58[TANGLE_ADDRESS_BASE58_BUF] = {};
+  address_from_base58("XLnYsJLvb3Pj3F1m4Mt8vtYjTBCMYwLmk5jva1UXiPjm", ed25519_addr);
+  address_2_base58(ed25519_addr, addr_base58);
+  TEST_ASSERT_EQUAL_STRING("XLnYsJLvb3Pj3F1m4Mt8vtYjTBCMYwLmk5jva1UXiPjm", addr_base58);
 }
 
 void test_address_list() {
@@ -70,6 +82,7 @@ int main() {
   UNITY_BEGIN();
 
   RUN_TEST(test_address_gen);
+  RUN_TEST(test_address_conv);
   RUN_TEST(test_address_list);
 
   return UNITY_END();
