@@ -4,6 +4,32 @@
 #include "client/api/get_unspent_outputs.h"
 #include "client/network/http.h"
 
+void test_unspent_outputs() {
+  tangle_client_conf_t ctx = {
+      .url = "https://api.goshimmer/",
+      .port = 0  // use default port number
+  };
+  req_unspent_outs_t* addresses = addr_list_new();
+  TEST_ASSERT_NOT_NULL(addresses);
+  res_unspent_outs_t* res = unspent_list_new();
+  TEST_ASSERT_NOT_NULL(res);
+
+  byte_t tmp_addr[TANGLE_ADDRESS_BYTES];
+  TEST_ASSERT_TRUE(address_from_base58("XLnYsJLvb3Pj3F1m4Mt8vtYjTBCMYwLmk5jva1UXiPjm", tmp_addr));
+  addr_list_push(addresses, tmp_addr);
+  TEST_ASSERT_TRUE(address_from_base58("UKUjKvfrKR1RnRiBpXSKxo6DRnvW6oqffsGfDrDEiVMX", tmp_addr));
+  addr_list_push(addresses, tmp_addr);
+  TEST_ASSERT_TRUE(address_from_base58("YQp3UbW56TX9HTm1XTUw1tRWHhLg8tKnNhT5FDq5MLNb", tmp_addr));
+  addr_list_push(addresses, tmp_addr);
+
+  int ret = get_unspent_outputs(&ctx, addresses, res);
+  TEST_ASSERT_EQUAL_INT(0, ret);
+  unspent_list_print(res);
+
+  addr_list_free(addresses);
+  unspent_list_free(res);
+}
+
 void test_deser_unspent_outputs() {
   char const data1[] =
       "{\"unspent_outputs\":[{\"address\":\"XLnYsJLvb3Pj3F1m4Mt8vtYjTBCMYwLmk5jva1UXiPjm\",\"output_ids\":[]},{"
@@ -47,6 +73,7 @@ int main() {
   http_client_init();
 
   RUN_TEST(test_deser_unspent_outputs);
+  // RUN_TEST(test_unspent_outputs);
 
   http_client_clean();
 

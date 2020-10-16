@@ -3,9 +3,10 @@
 
 #include <stdbool.h>
 
+#include "client/client_service.h"
 #include "core/transaction.h"
 
-// typedef addr_list_t req_unspent_outs_t;
+typedef addr_list_t req_unspent_outs_t;
 
 // represents the different states of an OutputID
 typedef struct {
@@ -43,6 +44,23 @@ typedef UT_array res_unspent_outs_t;
 extern "C" {
 #endif
 
+/**
+ * @brief The unspent output API
+ *
+ * @param[in] conf The client endpoint configuration
+ * @param[in] req A list of addresses
+ * @param[out] res A list of unspent outputs
+ * @return int 0 on success
+ */
+int get_unspent_outputs(tangle_client_conf_t const *conf, req_unspent_outs_t *req, res_unspent_outs_t *res);
+
+/**
+ * @brief Unspent output deserialization
+ *
+ * @param[in] j_str A string of json object
+ * @param[out] res A response of the unspent output API
+ * @return int 0 on success
+ */
 int deser_unspent_outputs(char const *const j_str, res_unspent_outs_t *res);
 
 /**
@@ -122,6 +140,13 @@ static size_t unspent_list_len(res_unspent_outs_t *list) { return utarray_len(li
  * @param[in] list
  */
 static void unspent_list_free(res_unspent_outs_t *list) { utarray_free(list); }
+
+/**
+ * @brief Shows unspent outputs
+ *
+ * @param[in] list A unspent output list
+ */
+void unspent_list_print(res_unspent_outs_t *list);
 
 #ifdef __cplusplus
 }

@@ -5,7 +5,9 @@
 #include "client/api/get_unspent_outputs.h"
 #include "client/api/json_utils.h"
 #include "client/api/response_error.h"
+#include "client/network/http.h"
 #include "utarray.h"
+#include "utils/iota_str.h"
 
 static void output_id_icd_init(void *elm) {
   output_id_t *id = (output_id_t *)elm;
@@ -18,6 +20,7 @@ static void output_id_icd_copy(void *_dst, void const *_src) {
   output_id_t *dst = (output_id_t *)_dst;
   output_id_t *src = (output_id_t *)_src;
   memcpy(dst->output_id, src->output_id, TX_OUTPUT_ID_BASE58_BUF);
+  memcpy(&(dst->st), &(src->st), sizeof(inclusion_state_t));
 
   dst->balances = balance_list_clone(src->balances);
   if (dst->balances == NULL) {
@@ -140,6 +143,44 @@ end:
   return ret;
 }
 
+// 0 on success
+static int request_builder(req_unspent_outs_t *addresses, http_buf_t *req) {
+  int ret = 0;
+  cJSON *json_root = cJSON_CreateObject();
+  if (json_root == NULL) {
+    printf("[%s:%d] OOM\n", __func__, __LINE__);
+    return -1;
+  }
+
+  cJSON *j_addrs = cJSON_CreateArray();
+  if (j_addrs == NULL) {
+    ret = -1;
+    printf("[%s:%d] OOM\n", __func__, __LINE__);
+    goto end;
+  }
+
+  byte_t *addr = NULL;
+  char base58_addr[TANGLE_ADDRESS_BASE58_BUF];
+  ADDR_LIST_FOREACH(addresses, addr) {
+    address_2_base58(addr, base58_addr);
+    cJSON_AddItemToArray(j_addrs, cJSON_CreateString(base58_addr));
+  }
+
+  cJSON_AddItemToObject(json_root, "addresses", j_addrs);
+  char *json_text = cJSON_PrintUnformatted(json_root);
+  if (json_text == NULL) {
+    ret = -1;
+  } else {
+    http_buf_append(req, (byte_t *)json_text, strlen(json_text));
+    http_buf2str(req);
+    free(json_text);
+  }
+
+end:
+  cJSON_Delete(json_root);
+  return ret;
+}
+
 output_id_list_t *output_id_list_new() {
   output_id_list_t *list = NULL;
   utarray_new(list, &ut_output_id_icd);
@@ -159,10 +200,53 @@ output_id_list_t *output_id_list_clone(output_id_list_t *src) {
   return dst;
 }
 
+void output_id_list_print(output_id_list_t *list) {
+  printf("output_ids: [\n");
+  output_id_t *id = NULL;
+  OUTPUT_ID_FOREACH(list, id) {
+    printf("id: %s\n", id->output_id);
+    balance_list_print(id->balances);
+    printf("inclusion_state: [ ");
+    if (id->st.confirmed) {
+      printf("confirmed: true, ");
+    }
+    if (id->st.conflicting) {
+      printf("conflicting: true, ");
+    }
+    if (id->st.finalized) {
+      printf("finalized: true, ");
+    }
+    if (id->st.liked) {
+      printf("liked: true, ");
+    }
+    if (id->st.preferred) {
+      printf("preferred: true, ");
+    }
+    if (id->st.rejected) {
+      printf("rejected: true, ");
+    }
+    if (id->st.solid) {
+      printf("soild: true");
+    }
+    printf(" ]\n");
+  }
+  printf("]\n");
+}
+
 res_unspent_outs_t *unspent_list_new() {
   res_unspent_outs_t *list = NULL;
   utarray_new(list, &ut_unspent_icd);
   return list;
+}
+
+void unspent_list_print(res_unspent_outs_t *list) {
+  printf("\nunspent_outputs: [\n");
+  res_unspent_t *elm = NULL;
+  UNSPENT_OUTS_FOREACH(list, elm) {
+    printf("addr: %s\n", elm->address);
+    output_id_list_print(elm->output_ids);
+  }
+  printf("]\n\n");
 }
 
 int deser_unspent_outputs(char const *const j_str, res_unspent_outs_t *res) {
@@ -217,10 +301,8 @@ int deser_unspent_outputs(char const *const j_str, res_unspent_outs_t *res) {
         printf("[%s:%d] invalid JSON format, %s is not an array\n", __func__, __LINE__, key_out_ids);
         goto end;
       }
-      if (cJSON_GetArraySize(j_ids) == 0) {
-        printf("output_ids: []\n");
-        continue;
-      }
+
+      // output id list could be empty
       unspent.output_ids = output_id_list_new();
       if (unspent.output_ids == NULL) {
         printf("[%s:%d] OOM\n", __func__, __LINE__);
@@ -240,5 +322,66 @@ int deser_unspent_outputs(char const *const j_str, res_unspent_outs_t *res) {
 
 end:
   cJSON_Delete(json_obj);
+  return ret;
+}
+
+int get_unspent_outputs(tangle_client_conf_t const *conf, req_unspent_outs_t *req, res_unspent_outs_t *res) {
+  int ret = 0;
+  char const *cmd_unspent_outputs = "value/unspentOutputs";
+  // compose restful api command
+  iota_str_t *cmd = iota_str_new(conf->url);
+  if (cmd == NULL) {
+    printf("[%s:%d]: OOM\n", __func__, __LINE__);
+    return -1;
+  }
+
+  if (iota_str_append(cmd, cmd_unspent_outputs)) {
+    printf("[%s:%d]: string append failed\n", __func__, __LINE__);
+    ret = -1;
+    goto done;
+  }
+
+  // http client configuration
+  http_client_config_t http_conf = {0};
+  http_conf.url = cmd->buf;
+  if (conf->port) {
+    http_conf.port = conf->port;
+  }
+
+  http_buf_t *http_req = http_buf_new();
+  http_buf_t *http_res = http_buf_new();
+  if (http_res == NULL || http_req == NULL) {
+    printf("[%s:%d]: OOM\n", __func__, __LINE__);
+    ret = -1;
+    goto done;
+  }
+
+  // build request
+  if (request_builder(req, http_req) != 0) {
+    printf("[%s:%d]: build request failed\n", __func__, __LINE__);
+    ret = -1;
+    goto done;
+  }
+
+  // printf("req: %s\n", http_req->data);
+
+  // send request via http client
+  if (http_client_post(&http_conf, http_req, http_res) != 0) {
+    printf("[%s:%d]: http client post failed\n", __func__, __LINE__);
+    ret = -1;
+    goto done;
+  }
+  http_buf2str(http_res);
+
+  printf("res: %s\n", http_res->data);
+
+  // json deserialization
+  ret = deser_unspent_outputs((char const *const)http_res->data, res);
+
+done:
+  // cleanup command
+  iota_str_destroy(cmd);
+  http_buf_free(http_res);
+  http_buf_free(http_req);
   return ret;
 }

@@ -2,6 +2,7 @@
 #include <unity/unity.h>
 
 #include "client/api/get_node_info.h"
+#include "client/network/http.h"
 
 void test_get_info() {
   tangle_client_conf_t ctx = {
@@ -44,8 +45,12 @@ void test_deser_node_info() {
 int main() {
   UNITY_BEGIN();
 
+  http_client_init();
+
   RUN_TEST(test_deser_node_info);
   // RUN_TEST(test_get_info);
+
+  http_client_clean();
 
   return UNITY_END();
 }

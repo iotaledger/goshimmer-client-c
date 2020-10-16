@@ -16,12 +16,13 @@ static int request_builder(byte_t const tx_bytes[], http_buf_t *req) {
   }
 
   cJSON_AddItemToObject(json_root, "txn_bytes", cJSON_CreateString(tx_bytes));
-  char const *json_text = cJSON_PrintUnformatted(json_root);
+  char *json_text = cJSON_PrintUnformatted(json_root);
   if (json_text == NULL) {
     ret = -1;
   } else {
     http_buf_append(req, (byte_t *)json_text, strlen(json_text));
     http_buf2str(req);
+    free(json_text);
   }
   cJSON_Delete(json_root);
 
