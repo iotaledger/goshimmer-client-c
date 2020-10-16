@@ -79,10 +79,20 @@ void balance_set_color(byte_t const color[], balance_t *balance);
  *
  * @param[in] color A color object in bytes
  * @param[out] color_str A buffer holds color string
- * @return true
- * @return false
+ * @return true On success
+ * @return false On failed
  */
 bool balance_color_2_base58(byte_t color[], char color_str[]);
+
+/**
+ * @brief Gets a binary color from base58 encoded string.
+ *
+ * @param[in] color_str A based58 string
+ * @param[out] color A buffer holds color binary
+ * @return true On success
+ * @return false On failed
+ */
+bool balance_color_from_base58(char color_str[], byte_t color[]);
 
 /**
  * @brief print out a balance object

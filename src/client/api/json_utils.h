@@ -28,6 +28,16 @@ int json_get_string(cJSON const* const json_obj, char const key[], char str[], s
  */
 int json_get_boolean(cJSON const* const json_obj, char const key[], bool* const value);
 
+/**
+ * @brief Gets the 64bit integer from a given key
+ *
+ * @param[in] json_obj A JSON object
+ * @param[in] obj_name The key of an element
+ * @param[out] num The returned value
+ * @return int 0 on success
+ */
+int json_get_int64(cJSON const* const json_obj, char const* const obj_name, int64_t* const num);
+
 #ifdef __cplusplus
 }
 #endif

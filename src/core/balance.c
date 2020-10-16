@@ -29,6 +29,11 @@ bool balance_color_2_base58(byte_t color[], char color_str[]) {
   return ret;
 }
 
+bool balance_color_from_base58(char color_str[], byte_t color[]) {
+  size_t bin_size = BALANCE_COLOR_BYTES;
+  return b58tobin(color, &bin_size, color_str, strlen(color_str));
+}
+
 void balance_init(byte_t const color[], int64_t const value, balance_t* balance) {
   balance->value = value;
   memset(balance->color, 0, BALANCE_COLOR_BYTES);

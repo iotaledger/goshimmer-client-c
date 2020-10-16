@@ -110,6 +110,8 @@ int main() {
   RUN_TEST(test_balance);
   RUN_TEST(test_balance_list);
   RUN_TEST(test_balance_ht);
+  // TODO
+  // RUN_TEST(test_balance_color);
 
   return UNITY_END();
 }

@@ -3,10 +3,11 @@
 
 #include "client/api/response_error.h"
 #include "client/client_service.h"
+#include "core/message.h"
 #include "core/transaction.h"
 
 typedef struct {
-  char tx_id[TRANSACTION_ID_BASE58_BUF];
+  char msg_id[TANGLE_MSG_ID_BASE58_BUF];
 } res_send_tx_t;
 
 #ifdef __cplusplus

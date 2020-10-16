@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,5 +41,22 @@ int json_get_boolean(cJSON const* const json_obj, char const key[], bool* const 
     printf("[%s:%d] %s is not boolean value\n", __func__, __LINE__, key);
     return -1;
   }
+  return 0;
+}
+
+int json_get_int64(cJSON const* const json_obj, char const* const obj_name, int64_t* const num) {
+  cJSON* json_value = cJSON_GetObjectItemCaseSensitive(json_obj, obj_name);
+  if (json_value == NULL) {
+    printf("[%s:%d] %s is not found.\n", __func__, __LINE__, obj_name);
+    return -1;
+  }
+
+  if (cJSON_IsNumber(json_value) && json_value->valuedouble >= 0) {
+    *num = (int64_t)json_value->valuedouble;
+  } else {
+    printf("[%s:%d] %s is not number\n", __func__, __LINE__, obj_name);
+    return -1;
+  }
+
   return 0;
 }

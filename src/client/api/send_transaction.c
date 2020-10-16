@@ -106,7 +106,7 @@ int deser_send_tx(char const *const j_str, res_send_tx_t *res) {
   }
 
   // gets ID
-  if ((ret = json_get_string(json_obj, key_id, res->tx_id, sizeof(res->tx_id))) != 0) {
+  if ((ret = json_get_string(json_obj, key_id, res->msg_id, sizeof(res->msg_id))) != 0) {
     printf("[%s:%d]: gets %s json string failed\n", __func__, __LINE__, key_id);
     ret = -1;
     goto end;
