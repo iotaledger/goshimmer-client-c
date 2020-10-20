@@ -29,8 +29,7 @@ void test_tx_inputs() {
   TEST_ASSERT_EQUAL_MEMORY(tx_output_id, elm, TX_OUTPUT_ID_BYTES);
 
   elm = tx_inputs_at(ins, 1);
-  size_t expected_len = TX_OUTPUT_ID_BASE58_BUF;
-  tx_output_id_2_base58(elm, output_id_str, &expected_len);
+  tx_output_id_2_base58(elm, output_id_str);
   TEST_ASSERT_EQUAL_STRING(expected_id, output_id_str);
 
   // dump the list
@@ -166,12 +165,17 @@ void test_tx_empty_payload() {
   byte_buf_free(s);
 }
 
+void test_tx_id_ht() {
+  // TODO
+}
+
 int main() {
   UNITY_BEGIN();
 
   RUN_TEST(test_tx_inputs);
   RUN_TEST(test_tx_output_list);
   RUN_TEST(test_tx_empty_payload);
+  RUN_TEST(test_tx_id_ht);
 
   return UNITY_END();
 }

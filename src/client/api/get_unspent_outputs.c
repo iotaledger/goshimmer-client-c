@@ -9,58 +9,7 @@
 #include "utarray.h"
 #include "utils/iota_str.h"
 
-static void output_id_icd_init(void *elm) {
-  output_id_t *id = (output_id_t *)elm;
-  id->balances = NULL;
-  memset(&(id->st), 0, sizeof(inclusion_state_t));
-  memset(id->output_id, 0, TX_OUTPUT_ID_BASE58_BUF);
-}
-
-static void output_id_icd_copy(void *_dst, void const *_src) {
-  output_id_t *dst = (output_id_t *)_dst;
-  output_id_t *src = (output_id_t *)_src;
-  memcpy(dst->output_id, src->output_id, TX_OUTPUT_ID_BASE58_BUF);
-  memcpy(&(dst->st), &(src->st), sizeof(inclusion_state_t));
-
-  dst->balances = balance_list_clone(src->balances);
-  if (dst->balances == NULL) {
-    printf("[%s:%d] clone balance list failed\n", __func__, __LINE__);
-  }
-}
-
-static void output_id_icd_dtor(void *_elm) {
-  output_id_t *elm = (output_id_t *)_elm;
-  balance_list_free(elm->balances);
-}
-
-static UT_icd const ut_output_id_icd = {sizeof(output_id_t), output_id_icd_init, output_id_icd_copy,
-                                        output_id_icd_dtor};
-
-static void unspent_icd_init(void *elm) {
-  res_unspent_t *unspent = (res_unspent_t *)elm;
-  memset(unspent->address, 0, TANGLE_ADDRESS_BASE58_BUF);
-  unspent->output_ids = NULL;
-}
-
-static void unspent_icd_copy(void *_dst, void const *_src) {
-  res_unspent_t *dst = (res_unspent_t *)_dst;
-  res_unspent_t *src = (res_unspent_t *)_src;
-  memcpy(dst->address, src->address, TANGLE_ADDRESS_BASE58_BUF);
-
-  dst->output_ids = output_id_list_clone(src->output_ids);
-  if (dst->output_ids == NULL) {
-    printf("[%s:%d] clone balance list failed\n", __func__, __LINE__);
-  }
-}
-
-static void unspent_icd_dtor(void *_elm) {
-  res_unspent_t *elm = (res_unspent_t *)_elm;
-  output_id_list_free(elm->output_ids);
-}
-
-static UT_icd const ut_unspent_icd = {sizeof(res_unspent_t), unspent_icd_init, unspent_icd_copy, unspent_icd_dtor};
-
-static int deser_output_ids(cJSON *j_ids, output_id_list_t *ids) {
+static int deser_output_ids(cJSON *j_ids, output_ids_t **ids) {
   char const key_id[] = "id";
   char const key_balances[] = "balances";
   char const key_value[] = "value";
@@ -73,43 +22,34 @@ static int deser_output_ids(cJSON *j_ids, output_id_list_t *ids) {
   char const key_conflict[] = "conflicting";
   char const key_finalize[] = "finalized";
   char const key_prefer[] = "preferred";
-  char balance_color[BALANCE_COLOR_BASE58_BUF];
+
+  char color_str[BALANCE_COLOR_BASE58_BUF] = {};
+  char output_id_str[TX_OUTPUT_ID_BASE58_BUF] = {};
+  byte_t output_id[TX_OUTPUT_ID_BYTES] = {};
 
   int ret = -1;
   cJSON *ids_elm = NULL;
+
   cJSON_ArrayForEach(ids_elm, j_ids) {
-    // creates a new output id object
-    output_id_t id = {};
+    inclusion_state_t st = {};
     // get id from JSON
-    json_get_string(ids_elm, key_id, (char *)id.output_id, sizeof(id.output_id));
-    printf("id: %s\n", id.output_id);
+    json_get_string(ids_elm, key_id, output_id_str, sizeof(output_id_str));
+    // printf("id: %s\n", output_id_str);
+    tx_output_id_from_base58(output_id_str, TX_OUTPUT_ID_BASE58_BUF, output_id);
 
     // get inclusion state
     cJSON *j_state = cJSON_GetObjectItemCaseSensitive(ids_elm, key_st);
     if (j_state) {
-      if (json_get_boolean(j_state, key_reject, &id.st.solid) == 0) {
-        printf("%s : %s\n", key_solid, id.st.solid ? "true" : "false");
-      }
-      if (json_get_boolean(j_state, key_confirm, &id.st.confirmed) == 0) {
-        printf("%s : %s\n", key_confirm, id.st.confirmed ? "true" : "false");
-      }
-      if (json_get_boolean(j_state, key_reject, &id.st.rejected) == 0) {
-        printf("%s : %s\n", key_reject, id.st.rejected ? "true" : "false");
-      }
-      if (json_get_boolean(j_state, key_like, &id.st.liked) == 0) {
-        printf("%s : %s\n", key_like, id.st.liked ? "true" : "false");
-      }
-      if (json_get_boolean(j_state, key_conflict, &id.st.conflicting) == 0) {
-        printf("%s : %s\n", key_conflict, id.st.conflicting ? "true" : "false");
-      }
-      if (json_get_boolean(j_state, key_finalize, &id.st.finalized) == 0) {
-        printf("%s : %s\n", key_finalize, id.st.finalized ? "true" : "false");
-      }
-      if (json_get_boolean(j_state, key_prefer, &id.st.preferred) == 0) {
-        printf("%s : %s\n", key_prefer, id.st.preferred ? "true" : "false");
-      }
+      json_get_boolean(j_state, key_reject, &st.solid);
+      json_get_boolean(j_state, key_confirm, &st.confirmed);
+      json_get_boolean(j_state, key_reject, &st.rejected);
+      json_get_boolean(j_state, key_like, &st.liked);
+      json_get_boolean(j_state, key_conflict, &st.conflicting);
+      json_get_boolean(j_state, key_finalize, &st.finalized);
+      json_get_boolean(j_state, key_prefer, &st.preferred);
     }
 
+    balance_ht_t *balances = balance_ht_init();
     // get balances
     cJSON *j_balances = cJSON_GetObjectItemCaseSensitive(ids_elm, key_balances);
     if (j_balances) {
@@ -117,26 +57,20 @@ static int deser_output_ids(cJSON *j_ids, output_id_list_t *ids) {
         printf("[%s:%d] invalid JSON format, %s is not an array\n", __func__, __LINE__, key_balances);
         goto end;
       }
-      id.balances = balance_list_new();
       cJSON *bal_elm = NULL;
       cJSON_ArrayForEach(bal_elm, j_balances) {
         balance_t bal = {};
         json_get_int64(bal_elm, key_value, &bal.value);
-        // printf("value: %" PRId64 "\n", bal.value);
-        json_get_string(bal_elm, key_color, balance_color, BALANCE_COLOR_BASE58_BUF);
-        // printf("color: %s\n", tmp_str);
-        if (strncmp("IOTA", balance_color, 4) != 0) {
-          balance_color_from_base58(balance_color, bal.color);
+        json_get_string(bal_elm, key_color, color_str, BALANCE_COLOR_BASE58_BUF);
+        if (strncmp("IOTA", color_str, 4) != 0) {
+          balance_color_from_base58(color_str, bal.color);
         }
-        // balance_print(&bal);
-        // add balance to output id
-        balance_list_push(id.balances, &bal);
+        balance_ht_add(&balances, bal.color, bal.value);
       }
     }
-    // add id to list
-    output_id_list_push(ids, &id);
+    output_ids_add(ids, output_id + TANGLE_ADDRESS_BYTES, balances, &st);
     // clean up
-    balance_list_free(id.balances);
+    balance_ht_free(&balances);
   }
   ret = 0;
 end:
@@ -144,7 +78,7 @@ end:
 }
 
 // 0 on success
-static int request_builder(req_unspent_outs_t *addresses, http_buf_t *req) {
+static int request_builder(addr_list_t *addresses, http_buf_t *req) {
   int ret = 0;
   cJSON *json_root = cJSON_CreateObject();
   if (json_root == NULL) {
@@ -181,75 +115,7 @@ end:
   return ret;
 }
 
-output_id_list_t *output_id_list_new() {
-  output_id_list_t *list = NULL;
-  utarray_new(list, &ut_output_id_icd);
-  return list;
-}
-
-output_id_list_t *output_id_list_clone(output_id_list_t *src) {
-  output_id_list_t *dst = output_id_list_new();
-  if (dst == NULL) {
-    printf("[%s:%d] OOM\n", __func__, __LINE__);
-    return NULL;
-  }
-
-  output_id_t *id = NULL;
-  OUTPUT_ID_FOREACH(src, id) { output_id_list_push(dst, id); }
-
-  return dst;
-}
-
-void output_id_list_print(output_id_list_t *list) {
-  printf("output_ids: [\n");
-  output_id_t *id = NULL;
-  OUTPUT_ID_FOREACH(list, id) {
-    printf("id: %s\n", id->output_id);
-    balance_list_print(id->balances);
-    printf("inclusion_state: [ ");
-    if (id->st.confirmed) {
-      printf("confirmed: true, ");
-    }
-    if (id->st.conflicting) {
-      printf("conflicting: true, ");
-    }
-    if (id->st.finalized) {
-      printf("finalized: true, ");
-    }
-    if (id->st.liked) {
-      printf("liked: true, ");
-    }
-    if (id->st.preferred) {
-      printf("preferred: true, ");
-    }
-    if (id->st.rejected) {
-      printf("rejected: true, ");
-    }
-    if (id->st.solid) {
-      printf("soild: true");
-    }
-    printf(" ]\n");
-  }
-  printf("]\n");
-}
-
-res_unspent_outs_t *unspent_list_new() {
-  res_unspent_outs_t *list = NULL;
-  utarray_new(list, &ut_unspent_icd);
-  return list;
-}
-
-void unspent_list_print(res_unspent_outs_t *list) {
-  printf("\nunspent_outputs: [\n");
-  res_unspent_t *elm = NULL;
-  UNSPENT_OUTS_FOREACH(list, elm) {
-    printf("addr: %s\n", elm->address);
-    output_id_list_print(elm->output_ids);
-  }
-  printf("]\n\n");
-}
-
-int deser_unspent_outputs(char const *const j_str, res_unspent_outs_t *res) {
+int deser_unspent_outputs(char const *const j_str, unspent_outputs_t **unspent) {
   char const key_unspent[] = "unspent_outputs";
   char const key_addr[] = "address";
   char const key_out_ids[] = "output_ids";
@@ -285,16 +151,18 @@ int deser_unspent_outputs(char const *const j_str, res_unspent_outs_t *res) {
     goto end;
   }
 
-  cJSON *unspent_elm = NULL;
-  char tmp_str[256];
-  cJSON_ArrayForEach(unspent_elm, j_unspent) {
-    res_unspent_t unspent = {};
+  char addr_str[TANGLE_ADDRESS_BASE58_BUF] = {};
+  byte_t addr[TANGLE_ADDRESS_BYTES] = {};
 
+  cJSON *unspent_elm = NULL;
+  cJSON_ArrayForEach(unspent_elm, j_unspent) {
     // get address hash
-    json_get_string(unspent_elm, key_addr, (char *)unspent.address, sizeof(unspent.address));
-    printf("addr: %s\n", unspent.address);
+    json_get_string(unspent_elm, key_addr, addr_str, sizeof(addr_str));
+    // printf("addr: %s\n", addr_str);
+    address_from_base58(addr_str, addr);
 
     // get output id objects
+    output_ids_t *ids = output_ids_init();
     cJSON *j_ids = cJSON_GetObjectItemCaseSensitive(unspent_elm, key_out_ids);
     if (j_ids) {
       if (!cJSON_IsArray(j_ids)) {
@@ -302,20 +170,20 @@ int deser_unspent_outputs(char const *const j_str, res_unspent_outs_t *res) {
         goto end;
       }
 
-      // output id list could be empty
-      unspent.output_ids = output_id_list_new();
-      if (unspent.output_ids == NULL) {
-        printf("[%s:%d] OOM\n", __func__, __LINE__);
+      ret = deser_output_ids(j_ids, &ids);
+      if (ret != 0) {
+        printf("[%s:%d] parsing output IDs failed\n", __func__, __LINE__);
+        if (ids != NULL) {
+          output_ids_free(&ids);
+        }
         goto end;
       }
-      ret = deser_output_ids(j_ids, unspent.output_ids);
     }
 
-    // adds to response object
-    unspent_list_push(res, &unspent);
+    unspent_outputs_add(unspent, addr, ids);
     // clean up
-    if (unspent.output_ids != NULL) {
-      output_id_list_free(unspent.output_ids);
+    if (ids != NULL) {
+      output_ids_free(&ids);
     }
   }
   ret = 0;
@@ -325,7 +193,7 @@ end:
   return ret;
 }
 
-int get_unspent_outputs(tangle_client_conf_t const *conf, req_unspent_outs_t *req, res_unspent_outs_t *res) {
+int get_unspent_outputs(tangle_client_conf_t const *conf, addr_list_t *addrs, unspent_outputs_t **unspent) {
   int ret = 0;
   char const *cmd_unspent_outputs = "value/unspentOutputs";
   // compose restful api command
@@ -357,7 +225,7 @@ int get_unspent_outputs(tangle_client_conf_t const *conf, req_unspent_outs_t *re
   }
 
   // build request
-  if (request_builder(req, http_req) != 0) {
+  if (request_builder(addrs, http_req) != 0) {
     printf("[%s:%d]: build request failed\n", __func__, __LINE__);
     ret = -1;
     goto done;
@@ -376,7 +244,7 @@ int get_unspent_outputs(tangle_client_conf_t const *conf, req_unspent_outs_t *re
   printf("res: %s\n", http_res->data);
 
   // json deserialization
-  ret = deser_unspent_outputs((char const *const)http_res->data, res);
+  ret = deser_unspent_outputs((char const *const)http_res->data, unspent);
 
 done:
   // cleanup command

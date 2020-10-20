@@ -20,6 +20,8 @@ test_case_add("core/test_address.c" core_address)
 test_case_add("core/test_balance.c" core_balance)
 test_case_add("core/test_signatures.c" core_ed_signatures)
 test_case_add("core/test_transaction.c" core_transaction)
+test_case_add("core/test_output_ids.c" core_output_ids)
+test_case_add("core/test_unspent_outputs.c" core_unspent_outputs)
 
 test_case_add("utils/test_bitmask.c" utils_bitmask)
 test_case_add("utils/test_byte_buf.c" utils_byte_buffer)

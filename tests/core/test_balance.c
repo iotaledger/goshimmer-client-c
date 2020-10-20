@@ -101,7 +101,7 @@ void test_balance_ht() {
 
   balance_ht_print(&table);
 
-  balance_ht_destory(&table);
+  balance_ht_free(&table);
 }
 
 int main() {

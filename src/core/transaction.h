@@ -73,11 +73,20 @@ void tx_id_random(byte_t id[]);
  *
  * @param[in] id The id in bytes
  * @param[out] str_buf The id string
- * @param[out] buf_len The length of string
  * @return true
  * @return false
  */
-bool tx_id_2_base58(byte_t id[], char str_buf[], size_t *buf_len);
+bool tx_id_2_base58(byte_t id[], char str_buf[]);
+
+/**
+ * @brief Gets transaction id from base58 string
+ *
+ * @param[in] id_str The tx id in base58 encoded
+ * @param[out] id The binary transaction id
+ * @return true
+ * @return false
+ */
+bool tx_id_from_base58(char id_str[], byte_t id[]);
 
 // ========== TX OUTPUT ID METHODS ==========
 
@@ -102,11 +111,10 @@ void tx_output_id(byte_t addr[], byte_t id[], byte_t output_id[]);
  *
  * @param[in] output_id An output id
  * @param[out] str_buf A buffer holds output id string
- * @param[out] buf_len The length of buffer
  * @return true On success
  * @return false On failed
  */
-bool tx_output_id_2_base58(byte_t output_id[], char str_buf[], size_t *buf_len);
+bool tx_output_id_2_base58(byte_t output_id[], char str_buf[]);
 
 /**
  * @brief Gets a binary output id from base58 encoded string

@@ -4,20 +4,14 @@
 #include <stdbool.h>
 
 #include "client/client_service.h"
+#include "core/unspent_outputs.h"
 #include "wallet/address_manager.h"
 #include "wallet/asset_registry.h"
-#include "wallet/output.h"
-
-typedef struct {
-  byte_t address[TANGLE_ADDRESS_BYTES];
-  byte_t tx_output_id[TX_OUTPUT_ID_BYTES];
-} unspent_output_t;
-
 typedef struct {
   tangle_client_conf_t endpoint;
   wallet_am_t* addr_manager;
+  unspent_outputs_t* unspent;  // unspent outputs
   // wallet_ar_t asset_reg;
-  // wallet_om_t unspent_manager;
 } wallet_t;
 
 // a struct that is used to aggregate the optional parameters provided in the send founds call

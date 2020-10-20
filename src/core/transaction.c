@@ -24,8 +24,14 @@ static UT_icd const ut_outputs_icd = {sizeof(tx_output_t), NULL, outputs_icd_cop
 
 void tx_id_random(byte_t id[]) { randombytes_buf((void *const)id, TX_ID_BYTES); }
 
-bool tx_id_2_base58(byte_t id[], char str_buf[], size_t *buf_len) {
-  return b58enc((char *)str_buf, buf_len, (const void *)id, TX_ID_BYTES);
+bool tx_id_2_base58(byte_t id[], char str_buf[]) {
+  size_t len = TX_ID_BASE58_BUF;
+  return b58enc((char *)str_buf, &len, (const void *)id, TX_ID_BYTES);
+}
+
+bool tx_id_from_base58(char id_str[], byte_t id[]) {
+  size_t bin_size = TX_ID_BYTES;
+  return b58tobin(id, &bin_size, id_str, strlen(id_str));
 }
 
 void tx_output_id_random(byte_t output_id[]) { randombytes_buf((void *const)output_id, TX_OUTPUT_ID_BYTES); }
@@ -35,8 +41,9 @@ void tx_output_id(byte_t addr[], byte_t id[], byte_t output_id[]) {
   memcpy(output_id + TANGLE_ADDRESS_BYTES, id, TX_ID_BYTES);
 }
 
-bool tx_output_id_2_base58(byte_t output_id[], char str_buf[], size_t *buf_len) {
-  return b58enc((char *)str_buf, buf_len, (const void *)output_id, TX_OUTPUT_ID_BYTES);
+bool tx_output_id_2_base58(byte_t output_id[], char str_buf[]) {
+  size_t len = TX_OUTPUT_ID_BASE58_BUF;
+  return b58enc((char *)str_buf, &len, (const void *)output_id, TX_OUTPUT_ID_BYTES);
 }
 
 bool tx_output_id_from_base58(char str_buf[], size_t str_len, byte_t output_id[]) {
@@ -62,10 +69,9 @@ void tx_inputs_push_base58(tx_inputs_t *tx_in, char base58[]) {
 void tx_inputs_print(tx_inputs_t *tx_in) {
   byte_t *output_id = NULL;
   char output_id_str[TX_OUTPUT_ID_BASE58_BUF];
-  size_t id_len = TX_OUTPUT_ID_BASE58_BUF;
   printf("inputs:[\n");
   TX_INPUTS_FOREACH(tx_in, output_id) {
-    tx_output_id_2_base58(output_id, output_id_str, &id_len);
+    tx_output_id_2_base58(output_id, output_id_str);
     printf("  %s\n", output_id_str);
   }
   printf("]\n");

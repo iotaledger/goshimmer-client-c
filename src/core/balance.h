@@ -95,6 +95,13 @@ bool balance_color_2_base58(byte_t color[], char color_str[]);
 bool balance_color_from_base58(char color_str[], byte_t color[]);
 
 /**
+ * @brief Gets a random color
+ *
+ * @param[out] color A buffer holds binary color
+ */
+void balance_color_random(byte_t color[]);
+
+/**
  * @brief print out a balance object
  *
  * @param[in] balance A balance object.
@@ -226,11 +233,11 @@ static void balance_ht_remove(balance_ht_t **t, byte_t const color[]) {
 static size_t balance_ht_count(balance_ht_t **t) { return HASH_COUNT(*t); }
 
 /**
- * @brief Destories the colored balance hash table
+ * @brief Frees the colored balance hash table
  *
  * @param[in] t A colored balance hash table
  */
-static void balance_ht_destory(balance_ht_t **t) {
+static void balance_ht_free(balance_ht_t **t) {
   balance_ht_t *curr_elm, *tmp;
   HASH_ITER(hh, *t, curr_elm, tmp) {
     HASH_DEL(*t, curr_elm);
@@ -244,6 +251,14 @@ static void balance_ht_destory(balance_ht_t **t) {
  * @param[in] t A balance hash table
  */
 void balance_ht_print(balance_ht_t **t);
+
+/**
+ * @brief Duplicates a balance hash table
+ *
+ * @param[in] t A balance hash table
+ * @return balance_ht_t* A point to the new table
+ */
+balance_ht_t *balance_ht_clone(balance_ht_t **t);
 
 #ifdef __cplusplus
 }

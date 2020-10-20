@@ -5,6 +5,7 @@
 
 #include "core/balance.h"
 #include "libbase58.h"
+#include "sodium.h"
 
 static UT_icd const balance_list_icd = {sizeof(balance_t), NULL, NULL, NULL};
 
@@ -16,6 +17,8 @@ static bool empty_color(byte_t color[]) {
   }
   return true;
 }
+
+void balance_color_random(byte_t color[]) { randombytes_buf((void* const)color, BALANCE_COLOR_BYTES); }
 
 bool balance_color_2_base58(byte_t color[], char color_str[]) {
   size_t buf_len = BALANCE_COLOR_BASE58_BUF;
@@ -126,16 +129,21 @@ int balance_ht_add(balance_ht_t** t, byte_t const color[], int64_t value) {
 void balance_ht_print(balance_ht_t** t) {
   balance_ht_t *elm, *tmp;
   char color_str[BALANCE_COLOR_BASE58_BUF] = {};
-  size_t counter = 0;
   printf("balances: [\n");
   HASH_ITER(hh, *t, elm, tmp) {
     if (!empty_color(elm->color)) {
       balance_color_2_base58(elm->color, color_str);
-      printf("[%zu] %s , %" PRId64 "\n", counter, color_str, elm->value);
+      printf("%s , %" PRId64 "\n", color_str, elm->value);
     } else {
-      printf("[%zu] IOTA, %" PRId64 "\n", counter, elm->value);
+      printf("IOTA, %" PRId64 "\n", elm->value);
     }
-    counter++;
   }
   printf("]\n");
+}
+
+balance_ht_t* balance_ht_clone(balance_ht_t** t) {
+  balance_ht_t* dst = balance_ht_init();
+  balance_ht_t *src, *tmp;
+  HASH_ITER(hh, *t, src, tmp) { balance_ht_add(&dst, src->color, src->value); }
+  return dst;
 }

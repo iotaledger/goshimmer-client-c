@@ -9,10 +9,10 @@ void test_unspent_outputs() {
       .url = "https://api.goshimmer/",
       .port = 0  // use default port number
   };
-  req_unspent_outs_t* addresses = addr_list_new();
+  addr_list_t* addresses = addr_list_new();
   TEST_ASSERT_NOT_NULL(addresses);
-  res_unspent_outs_t* res = unspent_list_new();
-  TEST_ASSERT_NOT_NULL(res);
+  unspent_outputs_t* unspents = unspent_outputs_init();
+  TEST_ASSERT_NULL(unspents);
 
   byte_t tmp_addr[TANGLE_ADDRESS_BYTES];
   TEST_ASSERT_TRUE(address_from_base58("XLnYsJLvb3Pj3F1m4Mt8vtYjTBCMYwLmk5jva1UXiPjm", tmp_addr));
@@ -22,12 +22,12 @@ void test_unspent_outputs() {
   TEST_ASSERT_TRUE(address_from_base58("YQp3UbW56TX9HTm1XTUw1tRWHhLg8tKnNhT5FDq5MLNb", tmp_addr));
   addr_list_push(addresses, tmp_addr);
 
-  int ret = get_unspent_outputs(&ctx, addresses, res);
+  int ret = get_unspent_outputs(&ctx, addresses, &unspents);
   TEST_ASSERT_EQUAL_INT(0, ret);
-  unspent_list_print(res);
+  unspent_outputs_print(&unspents);
 
   addr_list_free(addresses);
-  unspent_list_free(res);
+  unspent_outputs_free(&unspents);
 }
 
 void test_deser_unspent_outputs() {
@@ -39,32 +39,32 @@ void test_deser_unspent_outputs() {
       "\"value\":1337,\"color\":\"IOTA\"}],\"inclusion_state\":{\"confirmed\":true,\"liked\":true,\"finalized\":true}}]"
       "}]}";
 
-  res_unspent_outs_t* res = unspent_list_new();
-  TEST_ASSERT(deser_unspent_outputs(data1, res) == 0);
-  unspent_list_free(res);
-  res = NULL;
+  unspent_outputs_t* unspents = unspent_outputs_init();
+  TEST_ASSERT(deser_unspent_outputs(data1, &unspents) == 0);
+  unspent_outputs_print(&unspents);
+  unspent_outputs_free(&unspents);
+  TEST_ASSERT_NULL(unspents);
 
   char const data2[] =
       "{\"unspent_outputs\":[{\"address\":\"XLnYsJLvb3Pj3F1m4Mt8vtYjTBCMYwLmk5jva1UXiPjm\",\"output_ids\":[]},{"
       "\"address\":\"UKUjKvfrKR1RnRiBpXSKxo6DRnvW6oqffsGfDrDEiVMX\",\"output_ids\":[]},{\"address\":"
       "\"YQp3UbW56TX9HTm1XTUw1tRWHhLg8tKnNhT5FDq5MLNb\",\"output_ids\":[]}]}";
-  res = unspent_list_new();
-  TEST_ASSERT(deser_unspent_outputs(data2, res) == 0);
-  unspent_list_free(res);
-  res = NULL;
+
+  TEST_ASSERT(deser_unspent_outputs(data2, &unspents) == 0);
+  unspent_outputs_print(&unspents);
+  unspent_outputs_free(&unspents);
+  TEST_ASSERT_NULL(unspents);
 
   // invalid
   char const data3[] = "";
-  res = unspent_list_new();
-  TEST_ASSERT(deser_unspent_outputs(data3, res) == -1);
-  unspent_list_free(res);
-  res = NULL;
+  TEST_ASSERT(deser_unspent_outputs(data3, &unspents) == -1);
+  unspent_outputs_free(&unspents);
+  TEST_ASSERT_NULL(unspents);
 
   char const data4[] = "{\"unspent_outputs\":[]}";
-  res = unspent_list_new();
-  TEST_ASSERT(deser_unspent_outputs(data4, res) == -1);
-  unspent_list_free(res);
-  res = NULL;
+  TEST_ASSERT(deser_unspent_outputs(data4, &unspents) == -1);
+  unspent_outputs_free(&unspents);
+  TEST_ASSERT_NULL(unspents);
 }
 
 int main() {
