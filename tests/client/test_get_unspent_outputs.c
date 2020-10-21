@@ -1,3 +1,4 @@
+#include <inttypes.h>
 #include <stdio.h>
 #include <unity/unity.h>
 
@@ -78,7 +79,14 @@ void test_deser_unspent_outputs() {
       "\"balances\":[{\"value\":1337,\"color\":\"IOTA\"}],\"inclusion_state\":{\"confirmed\":true,\"liked\":true,"
       "\"finalized\":true}}]}]}";
   TEST_ASSERT(deser_unspent_outputs(data5, &unspents) == 0);
+  // set/get spent addr
+  byte_t spent_addr[TANGLE_ADDRESS_BYTES];
+  address_from_base58("UKUjKvfrKR1RnRiBpXSKxo6DRnvW6oqffsGfDrDEiVMX", spent_addr);
+  TEST_ASSERT(unspent_outputs_get_spent(&unspents, spent_addr) == false);
+  unspent_outputs_set_spent(&unspents, spent_addr, true);
+  TEST_ASSERT(unspent_outputs_get_spent(&unspents, spent_addr) == true);
   unspent_outputs_print(&unspents);
+  TEST_ASSERT_EQUAL_UINT64(2574, unspent_outputs_balance(&unspents));
   unspent_outputs_free(&unspents);
   TEST_ASSERT_NULL(unspents);
 }

@@ -42,6 +42,33 @@ unspent_outputs_t *unspent_outputs_clone(unspent_outputs_t **t) {
   return dst;
 }
 
+void unspent_outputs_set_spent(unspent_outputs_t **t, byte_t addr[], bool spent) {
+  unspent_outputs_t *elm = unspent_outputs_find(t, addr);
+  if (elm == NULL) {
+    return;
+  }
+  elm->spent = spent;
+}
+
+bool unspent_outputs_get_spent(unspent_outputs_t **t, byte_t addr[]) {
+  unspent_outputs_t *elm = unspent_outputs_find(t, addr);
+  if (elm == NULL) {
+    return false;
+  }
+  return elm->spent;
+}
+
+uint64_t unspent_outputs_balance(unspent_outputs_t **t) {
+  unspent_outputs_t *elm, *tmp;
+  uint64_t sum = 0;
+  HASH_ITER(hh, *t, elm, tmp) {
+    if (elm->spent == false && elm->ids) {
+      sum += output_ids_balance(&elm->ids);
+    }
+  }
+  return sum;
+}
+
 void unspent_outputs_print(unspent_outputs_t **t) {
   unspent_outputs_t *elm, *tmp;
   char addr_str[TANGLE_ADDRESS_BASE58_BUF] = {};
@@ -51,7 +78,7 @@ void unspent_outputs_print(unspent_outputs_t **t) {
   printf("unspent_outputs: [\n===\n");
   HASH_ITER(hh, *t, elm, tmp) {
     address_2_base58(elm->addr, addr_str);
-    printf("address: %s\n", addr_str);
+    printf("address: %s %s\n", addr_str, elm->spent ? "[spent]" : "");
     output_ids_t *id_elm, *id_tmp;
     HASH_ITER(hh, elm->ids, id_elm, id_tmp) {
       memcpy(output_id, elm->addr, TANGLE_ADDRESS_BYTES);

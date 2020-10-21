@@ -9,6 +9,7 @@
 
 typedef struct {
   byte_t addr[TANGLE_ADDRESS_BYTES];
+  bool spent;
   output_ids_t *ids;
   UT_hash_handle hh;
 } unspent_outputs_t;
@@ -111,6 +112,34 @@ static void unspent_outputs_free(unspent_outputs_t **t) {
     free(curr_elm);
   }
 }
+
+/**
+ * @brief Sets the local status of this unspent outputs
+ *
+ *
+ * @param[in] t An unspent output hash table
+ * @param[in] addr An address
+ * @param[in] spent True as spent, False as unspent
+ */
+void unspent_outputs_set_spent(unspent_outputs_t **t, byte_t addr[], bool spent);
+
+/**
+ * @brief Gets the local status of this unspent output
+ *
+ * @param[in] t An unspent output hash table
+ * @param[in] addr An address
+ * @return true Spent address
+ * @return false Unspent address
+ */
+bool unspent_outputs_get_spent(unspent_outputs_t **t, byte_t addr[]);
+
+/**
+ * @brief Calculates confirmed balances
+ *
+ * @param[in] t An unspent output hash table
+ * @return uint64_t The sum of confirmed balances
+ */
+uint64_t unspent_outputs_balance(unspent_outputs_t **t);
 
 /**
  * @brief print out an unspent output hash table

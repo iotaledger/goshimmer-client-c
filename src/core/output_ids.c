@@ -32,6 +32,17 @@ output_ids_t *output_ids_clone(output_ids_t **t) {
   return dst;
 }
 
+uint64_t output_ids_balance(output_ids_t **t) {
+  uint64_t sum = 0;
+  output_ids_t *elm, *tmp;
+  HASH_ITER(hh, *t, elm, tmp) {
+    if (elm->st.confirmed) {
+      sum += balance_ht_sum(&elm->balances);
+    }
+  }
+  return sum;
+}
+
 void output_ids_print(output_ids_t **t) {
   output_ids_t *elm, *tmp;
   char id_str[TX_ID_BASE58_BUF] = {};
@@ -67,10 +78,7 @@ void inclustion_state_print(inclusion_state_t *st) {
     printf("rejected: true, ");
   }
   if (st->solid) {
-    printf("solid: true, ");
-  }
-  if (st->spent) {
-    printf("spent: true");
+    printf("solid: true ");
   }
   printf(" ]\n");
 }

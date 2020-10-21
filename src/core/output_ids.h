@@ -15,7 +15,6 @@ typedef struct {
   bool conflicting;
   bool finalized;
   bool preferred;
-  bool spent;
 } inclusion_state_t;
 
 /**
@@ -121,6 +120,16 @@ static void output_ids_free(output_ids_t **t) {
     free(curr_elm);
   }
 }
+
+/**
+ * @brief Calculates confirmed balances from outputs
+ *
+ * @param[in] t An output id hash table
+ * @return uint64_t The sum of confirmed balances.
+ */
+uint64_t output_ids_balance(output_ids_t **t);
+
+// uint64_t output_ids_balance(output_ids_t **t);
 
 /**
  * @brief print out an output id hash table

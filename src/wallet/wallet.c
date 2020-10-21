@@ -4,7 +4,8 @@
 #include "client/api/get_unspent_outputs.h"
 #include "wallet/wallet.h"
 
-wallet_t* wallet_init(char const url[], uint16_t port, byte_t const seed[]) {
+wallet_t* wallet_init(char const url[], uint16_t port, byte_t const seed[], uint64_t last_addr, uint64_t first_unspent,
+                      uint64_t last_unspent) {
   wallet_t* ctx = malloc(sizeof(wallet_t));
   if (ctx == NULL) {
     printf("[%s %d] OOM\n", __func__, __LINE__);
@@ -12,7 +13,18 @@ wallet_t* wallet_init(char const url[], uint16_t port, byte_t const seed[]) {
   }
 
   // address manager, we should update address status later.
-  ctx->addr_manager = am_new(seed, 0, NULL);
+  // TODO: init local unspent/spent addresses
+  bitmask_t* addr_mask = bitmask_new();
+  if (addr_mask == NULL) {
+    goto err;
+  }
+
+  for (uint64_t i = first_unspent; i <= last_unspent; i++) {
+    bitmask_op(addr_mask, i, BITMASK_SET);
+  }
+  bitmask_show(addr_mask);
+
+  ctx->addr_manager = am_new(seed, last_addr, addr_mask);
   if (ctx->addr_manager == NULL) {
     goto err;
   }
@@ -24,14 +36,21 @@ wallet_t* wallet_init(char const url[], uint16_t port, byte_t const seed[]) {
   // unspent output manager
   ctx->unspent = unspent_outputs_init();
 
-  // sync with node
-  // if(wallet_refresh(ctx, true) == false){
-  //   printf("[%s:%d] wallet status update failed\n", __func__, __LINE__);
-  // }
+  // fetch remote status, sync with node
+  if (wallet_refresh(ctx, true) == false) {
+    printf("[%s:%d] wallet status update failed\n", __func__, __LINE__);
+  }
 
+  if (addr_mask) {
+    bitmask_free(addr_mask);
+  }
   return ctx;
 
 err:
+  if (addr_mask) {
+    bitmask_free(addr_mask);
+  }
+
   wallet_free(ctx);
   return NULL;
 }
@@ -74,66 +93,49 @@ addr_list_t* wallet_unspent_addresses(wallet_t* w) { return am_unspent_addresses
 
 addr_list_t* wallet_spent_addresses(wallet_t* const w) { return am_spent_addresses(w->addr_manager); }
 
-// bool wallet_refresh(wallet_t* w, bool include_spent) {
-//   bool ret = false;
-//   addr_list_t* addrs = NULL;
-//   bool has_ids = false;
-//   if (include_spent) {
-//     addrs = wallet_addresses(w);
-//   } else {
-//     addrs = wallet_unspent_addresses(w);
-//   }
-//
-//   if (addrs == NULL || addr_list_len(addrs) == 0) {
-//     printf("[%s:%d] empty address list\n", __func__, __LINE__);
-//     return false;
-//   }
-//
-//   res_unspent_outs_t* res = unspent_list_new();
-//   if (res == NULL) {
-//     ret = false;
-//     goto end;
-//   }
-//
-//   if (get_unspent_outputs(&w->endpoint, addrs, res) == 0) {
-//     res_unspent_t* elm = NULL;
-//     byte_t ed_addr[TANGLE_ADDRESS_BYTES] = {};
-//     byte_t out_id[TX_OUTPUT_ID_BYTES] = {};
-//     UNSPENT_OUTS_FOREACH(res, elm) {
-//       has_ids = false;
-//       // get address
-//       address_from_base58(elm->address, ed_addr);
-//
-//       // parse output ids
-//       if (output_id_list_len(elm->output_ids) != 0) {
-//         has_ids = true;
-//         output_id_t* id = NULL;
-//         OUTPUT_ID_FOREACH(elm->output_ids, id) {
-//           // trying to add output IDs
-//           tx_output_id_from_base58(id->output_id, strlen(id->output_id), out_id);
-//           outputs_manager_add(&w->outputs, out_id);
-//           // balances
-//
-//         }
-//       }
-//
-//       // check if address exist in address manager
-//       byte_t* addr = NULL;
-//       ADDR_LIST_FOREACH(addrs, addr) {
-//         if (memcmp(addr, ed_addr, TANGLE_ADDRESS_BYTES) == 0) {
-//           //
-//         } else {
-//           // adds address to am
-//         }
-//       }
-//     }
-//   }
-//
-// end:
-//   addr_list_free(addrs);
-//   unspent_list_free(res);
-//
-//   return ret;
-// }
+bool wallet_refresh(wallet_t* w, bool include_spent) {
+  bool ret = false;
+  addr_list_t* addrs = NULL;
+  bool has_ids = false;
+  if (include_spent) {
+    addrs = wallet_addresses(w);
+  } else {
+    addrs = wallet_unspent_addresses(w);
+  }
+
+  if (addrs == NULL || addr_list_len(addrs) == 0) {
+    printf("[%s:%d] empty address list\n", __func__, __LINE__);
+    return false;
+  }
+
+  unspent_outputs_t* res = unspent_outputs_init();
+
+  if (get_unspent_outputs(&w->endpoint, addrs, &res) == 0) {
+    unspent_outputs_t *unspent, *tmp;
+    HASH_ITER(hh, res, unspent, tmp) {
+      // get the local status of this address
+      unspent_outputs_t* elm = unspent_outputs_find(&w->unspent, unspent->addr);
+      bool is_spent = false;
+      if (elm) {
+        is_spent = elm->spent;
+      }
+      unspent_outputs_update(&w->unspent, unspent->addr, unspent->ids);
+      // mark the output as spent if we already marked it as spent locally
+      unspent_outputs_set_spent(&w->unspent, unspent->addr, is_spent);
+    }
+  }
+  ret = true;
+
+end:
+  addr_list_free(addrs);
+  unspent_outputs_free(&res);
+
+  return ret;
+}
+
+uint64_t wallet_balance(wallet_t* w) {
+  wallet_refresh(w, false);
+  return unspent_outputs_balance(&w->unspent);
+}
 
 int wallet_unspent_outputs(wallet_t* w, send_funds_op_t* opt) { return -1; }

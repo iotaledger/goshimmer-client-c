@@ -31,7 +31,7 @@ int json_get_string(cJSON const* const json_obj, char const key[], char str[], s
 int json_get_boolean(cJSON const* const json_obj, char const key[], bool* const value) {
   cJSON* json_value = cJSON_GetObjectItemCaseSensitive(json_obj, key);
   if (json_value == NULL) {
-    printf("[%s:%d] JSON key not found %s\n", __func__, __LINE__, key);
+    // printf("[%s:%d] JSON key not found %s\n", __func__, __LINE__, key);
     return -1;
   }
 

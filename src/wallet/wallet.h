@@ -36,7 +36,30 @@ extern "C" {
  * @param[in] seed The seed, NULL for random seed
  * @return wallet_t* A wallet instance
  */
-wallet_t* wallet_init(char const url[], uint16_t port, byte_t const seed[]);
+
+/**
+ * @brief Creates or initializes a wallet instance
+ *
+ * @param[in] url The URL of an endpoint
+ * @param[in] port The port number, 0 for default port (8443 or 443)
+ * @param[in] seed The seed, NULL for random seed
+ * @param[in] last_addr The last address index
+ * @param[in] first_unspent The first unspent address index
+ * @param[in] last_unspent The last unspent address index
+ * @return wallet_t* A wallet instance
+ */
+wallet_t* wallet_init(char const url[], uint16_t port, byte_t const seed[], uint64_t last_addr, uint64_t first_unspent,
+                      uint64_t last_unspent);
+
+/**
+ * @brief Refresh wallet status with node
+ *
+ * @param[in] w A wallet instance
+ * @param[out] include_spent False for unspent address only
+ * @return true On success
+ * @return false On failed
+ */
+bool wallet_refresh(wallet_t* w, bool include_spent);
 
 /**
  * @brief Frees a wallet instance
@@ -117,8 +140,16 @@ int wallet_delete_asset();
 // requests some funds from the faucet for testing purposes.
 int wallet_req_funds();
 
-// the confirmed and pending balance of the funds managed by this wallet.
-int wallet_balance();
+/**
+ * @brief the confirmed balance of the funds managed by this wallet.
+ *
+ * @param[in] w A wallet instance
+ * @return uint64_t The sum of confirmed balances
+ */
+uint64_t wallet_balance(wallet_t* w);
+
+// the pending balance of the funds managed by this wallet.
+// uint64_t wallet_balance_pending(wallet_t* w);
 
 // from all the inputs determine which ones we need to consume.
 int wallet_determine_outputs();

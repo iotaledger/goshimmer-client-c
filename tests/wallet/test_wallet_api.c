@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <inttypes.h>
 
 #include "unity/unity.h"
 #include "wallet/wallet.h"
@@ -81,25 +82,28 @@ void test_wallet_address_manager() {
 }
 
 void test_wallet() {
-  wallet_t *w = wallet_init("https://api.goshimmer/", 0, NULL);
+  byte_t seed[TANGLE_SEED_BYTES];
+  seed_from_base58("332Db2RL4NHggDX4utnn5sCwTVTqUQJ3vC42TGZFC8hK", seed);
+  wallet_t *w = wallet_init("https://api.goshimmer/", 0, seed, 3, 0, 0);
   TEST_ASSERT_NOT_NULL(w);
   TEST_ASSERT_NOT_NULL(w->addr_manager->seed);
 
   bool synced = wallet_is_node_synced(w);
   printf("Is endpoint synced? %s\n", synced ? "Yes" : "No");
+  printf("balance: %"PRIu64"\n", wallet_balance(w));
 
   wallet_free(w);
 }
 
 void test_wallet_send_funds() {
-  wallet_t *w = wallet_init("https://api.goshimmer/", 0, NULL);
-  TEST_ASSERT_NOT_NULL(w);
-  TEST_ASSERT_NOT_NULL(w->addr_manager->seed);
+  // wallet_t *w = wallet_init("https://api.goshimmer/", 0, NULL);
+  // TEST_ASSERT_NOT_NULL(w);
+  // TEST_ASSERT_NOT_NULL(w->addr_manager->seed);
 
-  // int ret = wallet_send_funds(w);
-  // printf("Is endpoint synced? %s\n", synced ? "Yes" : "No");
+  // // int ret = wallet_send_funds(w);
+  // // printf("Is endpoint synced? %s\n", synced ? "Yes" : "No");
 
-  wallet_free(w);
+  // wallet_free(w);
 }
 
 int main() {

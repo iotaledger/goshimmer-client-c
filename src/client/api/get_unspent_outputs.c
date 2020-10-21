@@ -241,7 +241,7 @@ int get_unspent_outputs(tangle_client_conf_t const *conf, addr_list_t *addrs, un
   }
   http_buf2str(http_res);
 
-  printf("res: %s\n", http_res->data);
+  // printf("[%s:%d] res: %s\n", __func__, __LINE__, http_res->data);
 
   // json deserialization
   ret = deser_unspent_outputs((char const *const)http_res->data, unspent);

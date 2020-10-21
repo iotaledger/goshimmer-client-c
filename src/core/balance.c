@@ -126,6 +126,13 @@ int balance_ht_add(balance_ht_t** t, byte_t const color[], int64_t value) {
   return 0;
 }
 
+uint64_t balance_ht_sum(balance_ht_t** t) {
+  balance_ht_t *elm, *tmp;
+  uint64_t sum = 0;
+  HASH_ITER(hh, *t, elm, tmp) { sum += elm->value; }
+  return sum;
+}
+
 void balance_ht_print(balance_ht_t** t) {
   balance_ht_t *elm, *tmp;
   char color_str[BALANCE_COLOR_BASE58_BUF] = {};

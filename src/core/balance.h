@@ -246,6 +246,14 @@ static void balance_ht_free(balance_ht_t **t) {
 }
 
 /**
+ * @brief Calculates balances in the table
+ *
+ * @param[in] t A balance hash table
+ * @return uint64_t The sum of balances
+ */
+uint64_t balance_ht_sum(balance_ht_t **t);
+
+/**
  * @brief print out a colored balance hash table
  *
  * @param[in] t A balance hash table
