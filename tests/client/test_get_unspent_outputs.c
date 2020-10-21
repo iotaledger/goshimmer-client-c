@@ -65,6 +65,22 @@ void test_deser_unspent_outputs() {
   TEST_ASSERT(deser_unspent_outputs(data4, &unspents) == -1);
   unspent_outputs_free(&unspents);
   TEST_ASSERT_NULL(unspents);
+
+  char const data5[] =
+      "{\"unspent_outputs\":[{\"address\":\"XLnYsJLvb3Pj3F1m4Mt8vtYjTBCMYwLmk5jva1UXiPjm\",\"output_ids\":[]},{"
+      "\"address\":\"UKUjKvfrKR1RnRiBpXSKxo6DRnvW6oqffsGfDrDEiVMX\",\"output_ids\":[{\"id\":"
+      "\"97gvUtcshzi6DG9zpqbLoVktVs4kmrz9mn4YcgWfNt2roRjPBZLQWvn3Ky4hBtrYT1stY1fRMqcrAH6mq9SzH6SF\",\"balances\":[{"
+      "\"value\":100,\"color\":\"IOTA\"}],\"inclusion_state\":{\"confirmed\":true,\"liked\":true,\"finalized\":true}}]}"
+      ",{\"address\":\"YQp3UbW56TX9HTm1XTUw1tRWHhLg8tKnNhT5FDq5MLNb\",\"output_ids\":[{\"id\":"
+      "\"ALC5JTNWc3dxeF4gwiCHnLEPTATbXt3pX2HxoGqV15WWaC78z1UUf6eVXSUn9kudWc5zGNsX8threiQEKazMHfhM\",\"balances\":[{"
+      "\"value\":1237,\"color\":\"IOTA\"}],\"inclusion_state\":{\"confirmed\":true,\"liked\":true,\"finalized\":true}},"
+      "{\"id\":\"ALC5JTNWc3dxeF4gwiCHnLEPTATbXt3pX2HxoGqV15WWkT84CuiFty3cCRq5QaF3mYK5b87jpXyPLKbpsAdMPvaS\","
+      "\"balances\":[{\"value\":1337,\"color\":\"IOTA\"}],\"inclusion_state\":{\"confirmed\":true,\"liked\":true,"
+      "\"finalized\":true}}]}]}";
+  TEST_ASSERT(deser_unspent_outputs(data5, &unspents) == 0);
+  unspent_outputs_print(&unspents);
+  unspent_outputs_free(&unspents);
+  TEST_ASSERT_NULL(unspents);
 }
 
 int main() {

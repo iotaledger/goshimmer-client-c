@@ -35,7 +35,7 @@ static int deser_output_ids(cJSON *j_ids, output_ids_t **ids) {
     // get id from JSON
     json_get_string(ids_elm, key_id, output_id_str, sizeof(output_id_str));
     // printf("id: %s\n", output_id_str);
-    tx_output_id_from_base58(output_id_str, TX_OUTPUT_ID_BASE58_BUF, output_id);
+    tx_output_id_from_base58(output_id_str, strlen(output_id_str), output_id);
 
     // get inclusion state
     cJSON *j_state = cJSON_GetObjectItemCaseSensitive(ids_elm, key_st);
