@@ -142,6 +142,25 @@ bool unspent_outputs_get_spent(unspent_outputs_t **t, byte_t addr[]);
 uint64_t unspent_outputs_balance(unspent_outputs_t **t);
 
 /**
+ * @brief Calculates confirmed balances from given color
+ *
+ * @param[in] t An unspent output hash table
+ * @param[]in color A specific color
+ * @return uint64_t The sum of confirmed balances
+ */
+uint64_t unspent_outputs_balance_with_color(unspent_outputs_t **t, byte_t color[]);
+
+/**
+ * @brief Gets an outputs table that sufficient to the given balance
+ *
+ * @param[in] t An unspent output hash table
+ * @param[in] required_balance A required balance
+ * @param[in] color A required color
+ * @return unspent_outputs_t*
+ */
+unspent_outputs_t *unspent_outputs_required_outputs(unspent_outputs_t **t, uint64_t required_balance, byte_t color[]);
+
+/**
  * @brief print out an unspent output hash table
  *
  * @param[in] t An unspent output hash table

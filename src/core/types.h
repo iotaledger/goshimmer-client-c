@@ -28,4 +28,21 @@ static inline void dump_hex(byte_t const data[], size_t len) {
   printf("\n");
 }
 
+/**
+ * @brief Check is the byte array is empty
+ *
+ * @param[in] data A pointer to the byte array
+ * @param[in] len The length of this array
+ * @return true An empty array
+ * @return false Array with values
+ */
+static inline bool empty_byte_array(byte_t const data[], size_t len) {
+  for (size_t i = 0; i < len; i++) {
+    if (data[i] != 0x0) {
+      return false;
+    }
+  }
+  return true;
+}
+
 #endif

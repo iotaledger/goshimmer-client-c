@@ -16,7 +16,7 @@ typedef struct {
 
 // a struct that is used to aggregate the optional parameters provided in the send founds call
 typedef struct {
-  int64_t amount;
+  uint64_t amount;
   byte_t address[TANGLE_ADDRESS_BYTES];
   byte_t color[BALANCE_COLOR_BYTES];
   byte_t remainder[TANGLE_ADDRESS_BYTES];
@@ -125,18 +125,6 @@ addr_list_t* wallet_unspent_addresses(wallet_t* const w);
  */
 addr_list_t* wallet_spent_addresses(wallet_t* const w);
 
-// returns the unspent outputs that are available for spending.
-int wallet_unspent_outputs(wallet_t* w, send_funds_op_t* opt);
-
-// issues a payment of the given amount to the given address.
-int wallet_send_funds();
-int wallet_send_funds_opt();
-
-// creates a new colored token with the given details.
-int wallet_create_asset();
-int wallet_update_asset();
-int wallet_delete_asset();
-
 /**
  * @brief Requests some funds from the faucet for testing purpose
  *
@@ -153,9 +141,24 @@ int wallet_request_funds(wallet_t* w);
  */
 uint64_t wallet_balance(wallet_t* w);
 
-// TODO
+// issues a payment of the given amount to the given address.
+int wallet_send_funds(wallet_t* w, send_funds_op_t* dest);
+
+// ========= TODO =========
+
+// returns the unspent outputs that are available for spending.
+int wallet_unspent_outputs(wallet_t* w, send_funds_op_t* opt);
+
+// issues a payment of the given amount to the given address.
+int wallet_send_funds_opt();
+
+// creates a new colored token with the given details.
+int wallet_create_asset();
+int wallet_update_asset();
+int wallet_delete_asset();
+
 // the pending balance of the funds managed by this wallet.
-// uint64_t wallet_balance_pending(wallet_t* w);
+uint64_t wallet_balance_pending(wallet_t* w);
 
 // from all the inputs determine which ones we need to consume.
 int wallet_determine_outputs();

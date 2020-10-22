@@ -69,6 +69,33 @@ uint64_t unspent_outputs_balance(unspent_outputs_t **t) {
   return sum;
 }
 
+uint64_t unspent_outputs_balance_with_color(unspent_outputs_t **t, byte_t color[]) {
+  unspent_outputs_t *elm, *tmp;
+  uint64_t sum = 0;
+  HASH_ITER(hh, *t, elm, tmp) {
+    if (elm->spent == false && elm->ids) {
+      sum += output_ids_balance_with_color(&elm->ids, color);
+    }
+  }
+  return sum;
+}
+
+unspent_outputs_t *unspent_outputs_required_outputs(unspent_outputs_t **t, uint64_t required_balance, byte_t color[]) {
+  unspent_outputs_t *required_outputs = unspent_outputs_init();
+  unspent_outputs_t *elm, *tmp;
+  uint64_t sum = 0;
+  HASH_ITER(hh, *t, elm, tmp) {
+    if (elm->spent == false && elm->ids) {
+      sum += output_ids_balance_with_color(&elm->ids, color);
+      unspent_outputs_add(&required_outputs, elm->addr, elm->ids);
+      if (sum > required_balance) {
+        break;
+      }
+    }
+  }
+  return required_outputs;
+}
+
 void unspent_outputs_print(unspent_outputs_t **t) {
   unspent_outputs_t *elm, *tmp;
   char addr_str[TANGLE_ADDRESS_BASE58_BUF] = {};

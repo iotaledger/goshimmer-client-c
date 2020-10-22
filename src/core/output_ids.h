@@ -129,6 +129,15 @@ static void output_ids_free(output_ids_t **t) {
  */
 uint64_t output_ids_balance(output_ids_t **t);
 
+/**
+ * @brief Calculates confirmed balances with the given color
+ *
+ * @param[in] t An output id hash table
+ * @param[in] color A specific color
+ * @return uint64_t The sum of confirmed balances.
+ */
+uint64_t output_ids_balance_with_color(output_ids_t **t, byte_t color[]);
+
 // uint64_t output_ids_balance(output_ids_t **t);
 
 /**

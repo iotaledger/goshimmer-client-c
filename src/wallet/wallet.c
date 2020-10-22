@@ -1,3 +1,4 @@
+#include <inttypes.h>
 #include <stdio.h>
 
 #include "client/api/get_funds.h"
@@ -143,6 +144,11 @@ uint64_t wallet_balance(wallet_t* w) {
   return unspent_outputs_balance(&w->unspent);
 }
 
+uint64_t wallet_balance_with_color(wallet_t* w, byte_t color[]) {
+  wallet_refresh(w, false);
+  return unspent_outputs_balance_with_color(&w->unspent, color);
+}
+
 int wallet_request_funds(wallet_t* w) {
   int ret = -1;
   byte_t receiver[TANGLE_ADDRESS_BYTES];
@@ -153,4 +159,38 @@ int wallet_request_funds(wallet_t* w) {
   return ret;
 }
 
-int wallet_unspent_outputs(wallet_t* w, send_funds_op_t* opt) { return -1; }
+int wallet_send_funds(wallet_t* w, send_funds_op_t* dest) {
+  // validating send funds options
+  if (dest->amount <= 0 || empty_byte_array(dest->address, TANGLE_ADDRESS_BYTES)) {
+    printf("[%s:%d] Invalid amount or receiver address\n", __func__, __LINE__);
+    return -1;
+  }
+
+  // is the balance enough?
+  uint64_t curr_balance = wallet_balance_with_color(w, dest->color);
+  if (curr_balance < dest->amount) {
+    printf("[%s:%d] Insufficient balance (balance %" PRIu64 " < required %" PRIu64 ")\n", __func__, __LINE__,
+           curr_balance, dest->amount);
+    return -1;
+  }
+
+  // is the remainder needed?
+  if (curr_balance > dest->amount) {
+    if (empty_byte_array(dest->remainder, TANGLE_ADDRESS_BYTES)) {
+      wallet_remainder_address(w, dest->remainder);
+    }
+  }
+
+  // looking for request founds in current unspent outputs
+  unspent_outputs_t* consumed_outputs = unspent_outputs_required_outputs(&w->unspent, dest->amount, dest->color);
+
+  // build transaction
+
+  // send transaction
+
+  // mark address as spent if transaction sent successfully
+
+  // print message id
+
+  return -1;
+}
