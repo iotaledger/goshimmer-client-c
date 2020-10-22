@@ -4,10 +4,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "core/address.h"
 #include "core/output_ids.h"
 #include "uthash.h"
 
 typedef struct {
+  uint64_t addr_index;
   byte_t addr[TANGLE_ADDRESS_BYTES];
   bool spent;
   output_ids_t *ids;
@@ -30,10 +32,11 @@ static unspent_outputs_t *unspent_outputs_init() { return NULL; }
  *
  * @param[in] t An unspent output table
  * @param[in] addr An address
+ * @param[in] addr_index The index of the address
  * @param[in] ids An output id table
  * @return int 0 on success
  */
-int unspent_outputs_add(unspent_outputs_t **t, byte_t const addr[], output_ids_t *ids);
+int unspent_outputs_add(unspent_outputs_t **t, byte_t const addr[], uint64_t addr_index, output_ids_t *ids);
 
 /**
  * @brief Updates/Replaces an element in the table

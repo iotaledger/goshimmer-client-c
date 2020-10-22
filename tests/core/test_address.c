@@ -51,8 +51,10 @@ void test_address_list() {
   addr_list_t* list2 = addr_list_new();
 
   for (int i = 0; i < 5; i++) {
-    randombytes_buf((void* const)random_addr, TANGLE_ADDRESS_BYTES);
-    addr_list_push(list1, random_addr);
+    address_t addr = {};
+    randombytes_buf((void* const)addr.addr, TANGLE_ADDRESS_BYTES);
+    addr.index = i;
+    addr_list_push(list1, &addr);
   }
   TEST_ASSERT_EQUAL_INT16(5, addr_list_len(list1));
   TEST_ASSERT_EQUAL_INT16(0, addr_list_len(list2));

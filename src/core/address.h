@@ -21,6 +21,11 @@
 // address signature version
 typedef enum { ADDRESS_VER_ED25519 = 1, ADDRESS_VER_BLS = 2 } address_version_t;
 
+typedef struct {
+  uint64_t index;
+  byte_t addr[TANGLE_ADDRESS_BYTES];
+} address_t;
+
 typedef UT_array addr_list_t;
 
 /**
@@ -28,7 +33,7 @@ typedef UT_array addr_list_t;
  *
  */
 #define ADDR_LIST_FOREACH(list, elm) \
-  for (elm = (byte_t *)utarray_front(list); elm != NULL; elm = (byte_t *)utarray_next(list, elm))
+  for (elm = (address_t *)utarray_front(list); elm != NULL; elm = (address_t *)utarray_next(list, elm))
 
 #ifdef __cplusplus
 extern "C" {
@@ -69,7 +74,7 @@ bool seed_from_base58(char const str[], byte_t out_seed[]);
  * @param[in] version The address signature version
  * @param[out] addr_out An address
  */
-void address_get(byte_t seed[], uint64_t index, address_version_t version, byte_t addr_out[]);
+void address_get(byte_t const seed[], uint64_t index, address_version_t version, byte_t addr_out[]);
 
 /**
  * @brief Gets a human readable version of the address (base58 encoded).
@@ -137,7 +142,7 @@ addr_list_t *addr_list_new();
  * @param[in] list The address list
  * @param[in] addr An address to be appended to the list.
  */
-static void addr_list_push(addr_list_t *list, byte_t const addr[]) { utarray_push_back(list, addr); }
+static void addr_list_push(addr_list_t *list, address_t *addr) { utarray_push_back(list, addr); }
 
 /**
  * @brief Removes an address from tail.
@@ -159,11 +164,11 @@ static size_t addr_list_len(addr_list_t *list) { return utarray_len(list); }
  *
  * @param[in] list An address list object
  * @param[in] index The index of the address
- * @return addr_list_t*
+ * @return address_t* A pointer to an address element
  */
-static byte_t *addr_list_at(addr_list_t *list, size_t index) {
+static address_t *addr_list_at(addr_list_t *list, size_t index) {
   // return NULL if not found.
-  return (byte_t *)utarray_eltptr(list, index);
+  return (address_t *)utarray_eltptr(list, index);
 }
 
 /**

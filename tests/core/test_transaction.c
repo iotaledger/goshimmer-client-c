@@ -117,6 +117,7 @@ void test_tx_empty_payload() {
   // add outputs
   tx.outputs = tx_outputs_new();
   tx_output_t out = {};
+  out.addr_index = 0;
   memcpy(out.address, addr_0, TANGLE_ADDRESS_BYTES);
   // creating a balance 1 with empty color
   balance_t balance = {};
@@ -132,6 +133,8 @@ void test_tx_empty_payload() {
 
   // clean up balance list
   balance_list_free(out.balances);
+
+  tx_outputs_print(tx.outputs);
 
   // calculate essence of the transaction
   byte_buf_t* essence = tx_essence(&tx);

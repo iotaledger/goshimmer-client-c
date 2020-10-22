@@ -15,13 +15,16 @@ void test_unspent_outputs() {
   unspent_outputs_t* unspents = unspent_outputs_init();
   TEST_ASSERT_NULL(unspents);
 
-  byte_t tmp_addr[TANGLE_ADDRESS_BYTES];
-  TEST_ASSERT_TRUE(address_from_base58("XLnYsJLvb3Pj3F1m4Mt8vtYjTBCMYwLmk5jva1UXiPjm", tmp_addr));
-  addr_list_push(addresses, tmp_addr);
-  TEST_ASSERT_TRUE(address_from_base58("UKUjKvfrKR1RnRiBpXSKxo6DRnvW6oqffsGfDrDEiVMX", tmp_addr));
-  addr_list_push(addresses, tmp_addr);
-  TEST_ASSERT_TRUE(address_from_base58("YQp3UbW56TX9HTm1XTUw1tRWHhLg8tKnNhT5FDq5MLNb", tmp_addr));
-  addr_list_push(addresses, tmp_addr);
+  address_t tmp_addr = {};
+  TEST_ASSERT_TRUE(address_from_base58("XLnYsJLvb3Pj3F1m4Mt8vtYjTBCMYwLmk5jva1UXiPjm", tmp_addr.addr));
+  tmp_addr.index = 0;
+  addr_list_push(addresses, &tmp_addr);
+  TEST_ASSERT_TRUE(address_from_base58("UKUjKvfrKR1RnRiBpXSKxo6DRnvW6oqffsGfDrDEiVMX", tmp_addr.addr));
+  tmp_addr.index = 1;
+  addr_list_push(addresses, &tmp_addr);
+  TEST_ASSERT_TRUE(address_from_base58("YQp3UbW56TX9HTm1XTUw1tRWHhLg8tKnNhT5FDq5MLNb", tmp_addr.addr));
+  tmp_addr.index = 2;
+  addr_list_push(addresses, &tmp_addr);
 
   int ret = get_unspent_outputs(&ctx, addresses, &unspents);
   TEST_ASSERT_EQUAL_INT(0, ret);

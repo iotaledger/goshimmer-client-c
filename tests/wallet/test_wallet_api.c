@@ -109,14 +109,17 @@ void test_wallet_request_funds() {
 }
 
 void test_wallet_send_funds() {
-  // wallet_t *w = wallet_init("g_endpoint", 0, NULL);
-  // TEST_ASSERT_NOT_NULL(w);
-  // TEST_ASSERT_NOT_NULL(w->addr_manager->seed);
+  wallet_t *w = wallet_init(g_endpoint, 0, g_seed, 3, 1, 3);
+  TEST_ASSERT_NOT_NULL(w);
+  TEST_ASSERT_NOT_NULL(w->addr_manager->seed);
 
-  // // int ret = wallet_send_funds(w);
-  // // printf("Is endpoint synced? %s\n", synced ? "Yes" : "No");
+  send_funds_op_t send_op = {};
+  send_op.amount = 100;
+  address_from_base58("YQp3UbW56TX9HTm1XTUw1tRWHhLg8tKnNhT5FDq5MLNb", send_op.receiver);
 
-  // wallet_free(w);
+  wallet_send_funds(w, &send_op);
+
+  wallet_free(w);
 }
 
 int main() {

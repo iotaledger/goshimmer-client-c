@@ -1,6 +1,8 @@
+#include <inttypes.h>
+
 #include "core/unspent_outputs.h"
 
-int unspent_outputs_add(unspent_outputs_t **t, byte_t const addr[], output_ids_t *ids) {
+int unspent_outputs_add(unspent_outputs_t **t, byte_t const addr[], uint64_t addr_index, output_ids_t *ids) {
   unspent_outputs_t *elm = unspent_outputs_find(t, addr);
   if (elm) {
     printf("[%s:%d] address exists in table\n", __func__, __LINE__);
@@ -14,21 +16,24 @@ int unspent_outputs_add(unspent_outputs_t **t, byte_t const addr[], output_ids_t
     return -1;
   }
   memcpy(elm->addr, addr, TANGLE_ADDRESS_BYTES);
+  elm->addr_index = addr_index;
   elm->ids = output_ids_clone(&ids);
   HASH_ADD(hh, *t, addr, TANGLE_ADDRESS_BYTES, elm);
   return 0;
 }
 
 int unspent_outputs_update(unspent_outputs_t **t, byte_t const addr[], output_ids_t *ids) {
-  unspent_outputs_remove(t, addr);
-  return unspent_outputs_add(t, addr, ids);
+  unspent_outputs_t *elm = unspent_outputs_find(t, addr);
+  if (elm) {
+    output_ids_free(&elm->ids);
+    elm->ids = output_ids_clone(&ids);
+  }
+  return 0;
 }
 
 int unspent_outputs_append_id(unspent_outputs_t **t, byte_t const addr[], output_ids_t *ids) {
   unspent_outputs_t *elm = unspent_outputs_find(t, addr);
-  if (!elm) {
-    return unspent_outputs_add(t, addr, ids);
-  } else {
+  if (elm) {
     output_ids_t *id_elm, *id_tmp;
     HASH_ITER(hh, ids, id_elm, id_tmp) { output_ids_add(&elm->ids, id_elm->id, id_elm->balances, &id_elm->st); }
   }
@@ -38,7 +43,7 @@ int unspent_outputs_append_id(unspent_outputs_t **t, byte_t const addr[], output
 unspent_outputs_t *unspent_outputs_clone(unspent_outputs_t **t) {
   unspent_outputs_t *dst = unspent_outputs_init();
   unspent_outputs_t *src, *tmp;
-  HASH_ITER(hh, *t, src, tmp) { unspent_outputs_add(&dst, src->addr, src->ids); }
+  HASH_ITER(hh, *t, src, tmp) { unspent_outputs_add(&dst, src->addr, src->addr_index, src->ids); }
   return dst;
 }
 
@@ -87,8 +92,8 @@ unspent_outputs_t *unspent_outputs_required_outputs(unspent_outputs_t **t, uint6
   HASH_ITER(hh, *t, elm, tmp) {
     if (elm->spent == false && elm->ids) {
       sum += output_ids_balance_with_color(&elm->ids, color);
-      unspent_outputs_add(&required_outputs, elm->addr, elm->ids);
-      if (sum > required_balance) {
+      unspent_outputs_add(&required_outputs, elm->addr, elm->addr_index, elm->ids);
+      if (sum >= required_balance) {
         break;
       }
     }
@@ -105,7 +110,7 @@ void unspent_outputs_print(unspent_outputs_t **t) {
   printf("unspent_outputs: [\n===\n");
   HASH_ITER(hh, *t, elm, tmp) {
     address_2_base58(elm->addr, addr_str);
-    printf("address: %s %s\n", addr_str, elm->spent ? "[spent]" : "");
+    printf("address[%" PRIu64 "]: %s %s\n", elm->addr_index, addr_str, elm->spent ? "[spent]" : "");
     output_ids_t *id_elm, *id_tmp;
     HASH_ITER(hh, elm->ids, id_elm, id_tmp) {
       memcpy(output_id, elm->addr, TANGLE_ADDRESS_BYTES);

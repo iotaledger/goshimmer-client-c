@@ -93,10 +93,10 @@ static int request_builder(addr_list_t *addresses, http_buf_t *req) {
     goto end;
   }
 
-  byte_t *addr = NULL;
+  address_t *addr = NULL;
   char base58_addr[TANGLE_ADDRESS_BASE58_BUF];
   ADDR_LIST_FOREACH(addresses, addr) {
-    address_2_base58(addr, base58_addr);
+    address_2_base58(addr->addr, base58_addr);
     cJSON_AddItemToArray(j_addrs, cJSON_CreateString(base58_addr));
   }
 
@@ -180,7 +180,8 @@ int deser_unspent_outputs(char const *const j_str, unspent_outputs_t **unspent) 
       }
     }
 
-    unspent_outputs_add(unspent, addr, ids);
+    // set the index to 0 and update it later
+    unspent_outputs_add(unspent, addr, 0, ids);
     // clean up
     if (ids != NULL) {
       output_ids_free(&ids);

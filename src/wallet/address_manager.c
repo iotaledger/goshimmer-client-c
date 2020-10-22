@@ -114,21 +114,22 @@ void am_get_last_unspent_address(wallet_am_t* const am, byte_t addr[]) {
 }
 
 addr_list_t* am_addresses(wallet_am_t* const am) {
-  byte_t tmp_addr[TANGLE_ADDRESS_BYTES] = {};
+  address_t tmp_addr = {};
   addr_list_t* list = addr_list_new();
   if (list == NULL) {
     return NULL;
   }
 
   for (uint64_t i = 0; i <= am->last_addr_index; i++) {
-    address_get(am->seed, i, ADDRESS_VER_ED25519, tmp_addr);
-    addr_list_push(list, tmp_addr);
+    address_get(am->seed, i, ADDRESS_VER_ED25519, tmp_addr.addr);
+    tmp_addr.index = i;
+    addr_list_push(list, &tmp_addr);
   }
   return list;
 }
 
 addr_list_t* am_unspent_addresses(wallet_am_t* const am) {
-  byte_t tmp_addr[TANGLE_ADDRESS_BYTES] = {};
+  address_t tmp_addr = {};
   addr_list_t* list = addr_list_new();
   if (list == NULL) {
     return NULL;
@@ -136,15 +137,16 @@ addr_list_t* am_unspent_addresses(wallet_am_t* const am) {
 
   for (uint64_t i = am->first_unspent_idx; i <= am->last_addr_index; i++) {
     if (!am_is_spent_address(am, i)) {
-      address_get(am->seed, i, ADDRESS_VER_ED25519, tmp_addr);
-      addr_list_push(list, tmp_addr);
+      address_get(am->seed, i, ADDRESS_VER_ED25519, tmp_addr.addr);
+      tmp_addr.index = i;
+      addr_list_push(list, &tmp_addr);
     }
   }
   return list;
 }
 
 addr_list_t* am_spent_addresses(wallet_am_t* const am) {
-  byte_t tmp_addr[TANGLE_ADDRESS_BYTES] = {};
+  address_t tmp_addr = {};
   addr_list_t* list = addr_list_new();
   if (list == NULL) {
     return NULL;
@@ -152,9 +154,17 @@ addr_list_t* am_spent_addresses(wallet_am_t* const am) {
 
   for (uint64_t i = 0; i <= am->last_addr_index; i++) {
     if (am_is_spent_address(am, i)) {
-      address_get(am->seed, i, ADDRESS_VER_ED25519, tmp_addr);
-      addr_list_push(list, tmp_addr);
+      address_get(am->seed, i, ADDRESS_VER_ED25519, tmp_addr.addr);
+      tmp_addr.index = i;
+      addr_list_push(list, &tmp_addr);
     }
   }
   return list;
+}
+
+void am_print(wallet_am_t* am) {
+  bitmask_show(am->spent_addr);
+  printf("last address index: %" PRIu64 "\n", am->last_addr_index);
+  printf("first unspent index: %" PRIu64 "\n", am->first_unspent_idx);
+  printf("last unspent index: %" PRIu64 "\n", am->last_unspent_idx);
 }

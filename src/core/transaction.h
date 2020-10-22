@@ -21,6 +21,7 @@
  *
  */
 typedef struct {
+  uint64_t addr_index;
   byte_t address[TANGLE_ADDRESS_BYTES];
   balance_list_t *balances;
 } tx_output_t;
@@ -246,6 +247,15 @@ void tx_outputs_print(tx_outputs_t *tx_out);
  * @return byte_buf_t*
  */
 byte_buf_t *tx_essence(transaction_t *tx);
+
+/**
+ * @brief Sign transaction
+ *
+ * @param[in] tx A transaction object
+ * @param[in] seed The seed
+ * @return int 0 on success
+ */
+int tx_sign(transaction_t *tx, byte_t seed[]);
 
 /**
  * @brief returns true if the signatures in this transaction are valid

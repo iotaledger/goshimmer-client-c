@@ -7,7 +7,7 @@
 
 #include "core/address.h"
 
-static UT_icd const addr_list_icd = {TANGLE_ADDRESS_BYTES * sizeof(byte_t), NULL, NULL, NULL};
+static UT_icd const addr_list_icd = {sizeof(address_t), NULL, NULL, NULL};
 
 static void address_from_ed25519(byte_t const seed[], uint64_t index, byte_t addr_out[]) {
   int digest_len = 32;
@@ -95,7 +95,7 @@ static void get_subseed(byte_t const seed[], uint64_t index, byte_t subseed[]) {
   }
 }
 
-void address_get(byte_t seed[], uint64_t index, address_version_t version, byte_t addr_out[]) {
+void address_get(byte_t const seed[], uint64_t index, address_version_t version, byte_t addr_out[]) {
   if (version == ADDRESS_VER_ED25519) {
     address_from_ed25519(seed, index, addr_out);
   } else {
@@ -153,12 +153,12 @@ addr_list_t *addr_list_new() {
 
 void addr_list_print(addr_list_t *list) {
   char addr_str[TANGLE_ADDRESS_BASE58_BUF];
-  byte_t *elm = NULL;
+  address_t *elm = NULL;
 
   printf("addresses: [\n");
   ADDR_LIST_FOREACH(list, elm) {
-    address_2_base58(elm, addr_str);
-    printf("%s\n", addr_str);
+    address_2_base58(elm->addr, addr_str);
+    printf("[%" PRIu64 "] %s\n", elm->index, addr_str);
   }
   printf("]\n");
 }

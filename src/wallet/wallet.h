@@ -17,7 +17,7 @@ typedef struct {
 // a struct that is used to aggregate the optional parameters provided in the send founds call
 typedef struct {
   uint64_t amount;
-  byte_t address[TANGLE_ADDRESS_BYTES];
+  byte_t receiver[TANGLE_ADDRESS_BYTES];
   byte_t color[BALANCE_COLOR_BYTES];
   byte_t remainder[TANGLE_ADDRESS_BYTES];
 } send_funds_op_t;
@@ -144,6 +144,7 @@ uint64_t wallet_balance(wallet_t* w);
 // issues a payment of the given amount to the given address.
 int wallet_send_funds(wallet_t* w, send_funds_op_t* dest);
 
+void wallet_status_print(wallet_t* w);
 // ========= TODO =========
 
 // returns the unspent outputs that are available for spending.
@@ -160,14 +161,11 @@ int wallet_delete_asset();
 // the pending balance of the funds managed by this wallet.
 uint64_t wallet_balance_pending(wallet_t* w);
 
-// from all the inputs determine which ones we need to consume.
-int wallet_determine_outputs();
-
 // build input for the transfer
-int wallet_build_inputs();
+// int wallet_build_inputs();
 
 // build outputs for the transfer
-int wallet_build_outputs();
+// int wallet_build_outputs();
 
 #ifdef __cplusplus
 }

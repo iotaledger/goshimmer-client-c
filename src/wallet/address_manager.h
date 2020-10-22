@@ -120,6 +120,13 @@ addr_list_t* am_unspent_addresses(wallet_am_t* const am);
  */
 addr_list_t* am_spent_addresses(wallet_am_t* const am);
 
+/**
+ * @brief Print out local address info
+ *
+ * @param[in] am A wallet manager instance
+ */
+void am_print(wallet_am_t* am);
+
 #ifdef __cplusplus
 }
 #endif

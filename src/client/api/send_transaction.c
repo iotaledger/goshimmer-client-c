@@ -15,7 +15,7 @@ static int request_builder(byte_t const tx_bytes[], http_buf_t *req) {
     return -1;
   }
 
-  cJSON_AddItemToObject(json_root, "txn_bytes", cJSON_CreateString(tx_bytes));
+  cJSON_AddItemToObject(json_root, "txn_bytes", cJSON_CreateString((const char *)tx_bytes));
   char *json_text = cJSON_PrintUnformatted(json_root);
   if (json_text == NULL) {
     ret = -1;
@@ -76,8 +76,8 @@ int send_tx_bytes(tangle_client_conf_t const *conf, byte_t const tx_bytes[], res
   }
   http_buf2str(http_res);
 
-  // printf("req: %s\n", http_req->data);
-  // printf("res: %s\n", http_res->data);
+  printf("[%s:%d] req: %s\n", __func__, __LINE__, http_req->data);
+  printf("[%s:%d] res: %s\n", __func__, __LINE__, http_res->data);
 
   // json deserialization
   deser_send_tx((char const *const)http_res->data, res);

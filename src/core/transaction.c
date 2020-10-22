@@ -9,6 +9,7 @@ static void outputs_icd_copy(void *_dst, void const *_src) {
   tx_output_t *dst = (tx_output_t *)_dst;
   tx_output_t *src = (tx_output_t *)_src;
   memcpy(dst->address, src->address, TANGLE_ADDRESS_BYTES);
+  dst->addr_index = src->addr_index;
   dst->balances = balance_list_clone(src->balances);
   if (dst->balances == NULL) {
     printf("[%s:%d] clone balance list failed\n", __func__, __LINE__);
@@ -89,7 +90,7 @@ void tx_outputs_print(tx_outputs_t *tx_out) {
   printf("outputs:[\n");
   TX_OUTPUTS_FOREACH(tx_out, o) {
     address_2_base58(o->address, addr);
-    printf("  %s: [\n", addr);
+    printf("  %s[%" PRIu64 "]: [\n", addr, o->addr_index);
     balance_list_print(o->balances);
     printf("  ]\n");
   }
@@ -173,6 +174,7 @@ byte_buf_t *tx_essence(transaction_t *tx) {
 
   } else {
     // TODO
+    printf("[%s:%d] TODO\n", __func__, __LINE__);
     return NULL;
   }
 
@@ -205,6 +207,43 @@ bool tx_signautres_valid(transaction_t *tx) {
     }
   }
   return true;
+}
+
+int tx_sign(transaction_t *tx, byte_t seed[]) {
+  if (seed == NULL || tx->outputs == NULL) {
+    printf("[%s:%d] null parameters\n", __func__, __LINE__);
+    return -1;
+  }
+
+  // calculate essence of the transaction
+  byte_buf_t *essence = tx_essence(tx);
+  if (essence == NULL) {
+    printf("[%s:%d] transaction essence calculation failed\n", __func__, __LINE__);
+    return -1;
+  }
+
+  // get signature
+  byte_t addr_pub[ED_PUBLIC_KEY_BYTES] = {};
+  byte_t addr_priv[ED_PRIVATE_KEY_BYTES] = {};
+  byte_t addr_sig[ED_SIGNATURE_BYTES] = {};
+  tx_output_t *out = NULL;
+
+  if (tx->signatures) {
+    ed_signatures_destory(&tx->signatures);
+  }
+  tx->signatures = ed_signatures_init();
+
+  TX_OUTPUTS_FOREACH(tx->outputs, out) {
+    sign_signature(seed, out->addr_index, essence->data, essence->len, addr_sig);
+    address_ed25519_keypair(seed, out->addr_index, addr_pub, addr_priv);
+    ed_signatures_add(&tx->signatures, out->address, addr_pub, addr_sig);
+  }
+
+  // dump tx object
+  tx_print(tx);
+
+  byte_buf_free(essence);
+  return 0;
 }
 
 void tx_print(transaction_t *tx) {

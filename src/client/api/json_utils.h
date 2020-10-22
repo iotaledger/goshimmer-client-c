@@ -1,6 +1,8 @@
 #ifndef __CLIENT_API_JSON_UTILS_H__
 #define __CLIENT_API_JSON_UTILS_H__
 
+#include <stdbool.h>
+
 #include "cJSON.h"
 
 #ifdef __cplusplus
