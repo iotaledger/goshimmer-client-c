@@ -137,8 +137,13 @@ int wallet_create_asset();
 int wallet_update_asset();
 int wallet_delete_asset();
 
-// requests some funds from the faucet for testing purposes.
-int wallet_req_funds();
+/**
+ * @brief Requests some funds from the faucet for testing purpose
+ *
+ * @param[in] w A wallet instance
+ * @return int 0 on success
+ */
+int wallet_request_funds(wallet_t* w);
 
 /**
  * @brief the confirmed balance of the funds managed by this wallet.
@@ -148,6 +153,7 @@ int wallet_req_funds();
  */
 uint64_t wallet_balance(wallet_t* w);
 
+// TODO
 // the pending balance of the funds managed by this wallet.
 // uint64_t wallet_balance_pending(wallet_t* w);
 

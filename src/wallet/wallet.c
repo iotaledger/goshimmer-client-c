@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "client/api/get_funds.h"
 #include "client/api/get_node_info.h"
 #include "client/api/get_unspent_outputs.h"
 #include "wallet/wallet.h"
@@ -19,7 +20,8 @@ wallet_t* wallet_init(char const url[], uint16_t port, byte_t const seed[], uint
     goto err;
   }
 
-  for (uint64_t i = first_unspent; i <= last_unspent; i++) {
+  // mask spent address
+  for (uint64_t i = 0; i < first_unspent; i++) {
     bitmask_op(addr_mask, i, BITMASK_SET);
   }
   bitmask_show(addr_mask);
@@ -28,6 +30,9 @@ wallet_t* wallet_init(char const url[], uint16_t port, byte_t const seed[], uint
   if (ctx->addr_manager == NULL) {
     goto err;
   }
+  ctx->addr_manager->first_unspent_idx = first_unspent;
+  ctx->addr_manager->last_unspent_idx = last_unspent;
+  ctx->addr_manager->last_addr_index = last_addr;
 
   // client endpoint
   strcpy(ctx->endpoint.url, url);
@@ -136,6 +141,16 @@ end:
 uint64_t wallet_balance(wallet_t* w) {
   wallet_refresh(w, false);
   return unspent_outputs_balance(&w->unspent);
+}
+
+int wallet_request_funds(wallet_t* w) {
+  int ret = -1;
+  byte_t receiver[TANGLE_ADDRESS_BYTES];
+  res_get_funds_t res = {};
+  wallet_receive_address(w, receiver);
+  ret = get_funds(&w->endpoint, receiver, &res);
+  printf("[%s:%d] message ID: %s\n", __func__, __LINE__, res.msg_id);
+  return ret;
 }
 
 int wallet_unspent_outputs(wallet_t* w, send_funds_op_t* opt) { return -1; }

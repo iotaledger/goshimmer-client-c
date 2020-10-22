@@ -1,19 +1,19 @@
-#include <stdio.h>
 #include <inttypes.h>
+#include <stdio.h>
+#include <unistd.h>  // sleep
 
 #include "unity/unity.h"
 #include "wallet/wallet.h"
 
-void test_wallet_address_manager() {
-  byte_t seed[TANGLE_SEED_BYTES];
-  byte_t tmp[TANGLE_ADDRESS_BYTES];
-  char *tmp_addr[TANGLE_ADDRESS_BASE58_BUF];
+byte_t g_seed[TANGLE_SEED_BYTES];
+char const *const g_endpoint = "https://api.goshimmer/";
 
-  // init address manager with a given seed
-  seed_from_base58("332Db2RL4NHggDX4utnn5sCwTVTqUQJ3vC42TGZFC8hK", seed);
-  wallet_am_t *am = am_new(seed, 0, NULL);
+void test_wallet_address_manager() {
+  byte_t tmp[TANGLE_ADDRESS_BYTES];
+
+  wallet_am_t *am = am_new(g_seed, 0, NULL);
   TEST_ASSERT_NOT_NULL(am);
-  TEST_ASSERT_EQUAL_MEMORY(seed, am->seed, TANGLE_SEED_BYTES);
+  TEST_ASSERT_EQUAL_MEMORY(g_seed, am->seed, TANGLE_SEED_BYTES);
 
   // check address status
   TEST_ASSERT_EQUAL_INT64(0, am->first_unspent_idx);
@@ -82,21 +82,34 @@ void test_wallet_address_manager() {
 }
 
 void test_wallet() {
-  byte_t seed[TANGLE_SEED_BYTES];
-  seed_from_base58("332Db2RL4NHggDX4utnn5sCwTVTqUQJ3vC42TGZFC8hK", seed);
-  wallet_t *w = wallet_init("https://api.goshimmer/", 0, seed, 3, 0, 0);
+  wallet_t *w = wallet_init(g_endpoint, 0, g_seed, 3, 1, 3);
   TEST_ASSERT_NOT_NULL(w);
   TEST_ASSERT_NOT_NULL(w->addr_manager->seed);
 
   bool synced = wallet_is_node_synced(w);
   printf("Is endpoint synced? %s\n", synced ? "Yes" : "No");
-  printf("balance: %"PRIu64"\n", wallet_balance(w));
+  printf("balance: %" PRIu64 "\n", wallet_balance(w));
+  unspent_outputs_print(&w->unspent);
+
+  wallet_free(w);
+}
+
+void test_wallet_request_funds() {
+  wallet_t *w = wallet_init(g_endpoint, 0, g_seed, 3, 1, 3);
+  TEST_ASSERT_NOT_NULL(w);
+  TEST_ASSERT_NOT_NULL(w->addr_manager->seed);
+
+  uint64_t balance_a = wallet_balance(w);
+  TEST_ASSERT(wallet_request_funds(w) == 0);
+  sleep(10);
+  uint64_t balance_b = wallet_balance(w);
+  TEST_ASSERT(balance_b > balance_a);
 
   wallet_free(w);
 }
 
 void test_wallet_send_funds() {
-  // wallet_t *w = wallet_init("https://api.goshimmer/", 0, NULL);
+  // wallet_t *w = wallet_init("g_endpoint", 0, NULL);
   // TEST_ASSERT_NOT_NULL(w);
   // TEST_ASSERT_NOT_NULL(w->addr_manager->seed);
 
@@ -108,9 +121,11 @@ void test_wallet_send_funds() {
 
 int main() {
   UNITY_BEGIN();
+  seed_from_base58("332Db2RL4NHggDX4utnn5sCwTVTqUQJ3vC42TGZFC8hK", g_seed);
 
   RUN_TEST(test_wallet_address_manager);
   // RUN_TEST(test_wallet);
+  // RUN_TEST(test_wallet_request_funds);
   // RUN_TEST(test_wallet_send_funds);
 
   return UNITY_END();
