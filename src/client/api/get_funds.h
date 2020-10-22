@@ -28,7 +28,7 @@ extern "C" {
  * @param[out] res A response object
  * @return int 0 on success
  */
-int get_funds(tangle_client_conf_t const *conf, char const addr[], res_get_funds_t *res);
+int get_funds(tangle_client_conf_t const *conf, byte_t const addr[], res_get_funds_t *res);
 
 /**
  * @brief Response deserialization

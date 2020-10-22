@@ -10,8 +10,10 @@ void test_get_funds() {
       .port = 0  // use default port number
   };
   res_get_funds_t funds = {};
+  byte_t addr[TANGLE_ADDRESS_BYTES];
+  address_from_base58("L6JurtKXPufmThEoK1aBwmyiJ1DKSMMxkMmFypiDksRx", addr);
 
-  TEST_ASSERT(get_funds(&ctx, "L6JurtKXPufmThEoK1aBwmyiJ1DKSMMxkMmFypiDksRx", &funds) == 0);
+  TEST_ASSERT(get_funds(&ctx, addr, &funds) == 0);
 }
 
 void test_deser_get_funds() {

@@ -7,15 +7,17 @@
 #include "utils/iota_str.h"
 
 // 0 on success
-static int request_builder(char const addr[], http_buf_t *req) {
+static int request_builder(byte_t const addr[], http_buf_t *req) {
   int ret = 0;
+  char addr_str[TANGLE_ADDRESS_BASE58_BUF];
 
   cJSON *json_root = cJSON_CreateObject();
   if (json_root == NULL) {
     return -1;
   }
+  address_2_base58(addr, addr_str);
 
-  cJSON_AddItemToObject(json_root, "address", cJSON_CreateString(addr));
+  cJSON_AddItemToObject(json_root, "address", cJSON_CreateString(addr_str));
   char const *json_text = cJSON_PrintUnformatted(json_root);
   if (json_text == NULL) {
     ret = -1;
@@ -28,7 +30,7 @@ static int request_builder(char const addr[], http_buf_t *req) {
   return ret;
 }
 
-int get_funds(tangle_client_conf_t const *conf, char const addr[], res_get_funds_t *res) {
+int get_funds(tangle_client_conf_t const *conf, byte_t const addr[], res_get_funds_t *res) {
   int ret = 0;
   char const *const cmd_faucet = "faucet";
   // compose restful api command
