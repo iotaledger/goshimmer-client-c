@@ -19,11 +19,15 @@ void test_base64() {
 
   // Base64 encoding test
   src = base64_test_dec;
+  TEST_ASSERT(base64_encode(NULL, 0, &len, src, 64) == ERR_BASE64_BUFFER_TOO_SMALL);
+  TEST_ASSERT_EQUAL_UINT32(89, len);
   TEST_ASSERT(base64_encode(buffer, sizeof(buffer), &len, src, 64) == 0);
-  TEST_ASSERT_EQUAL_MEMORY(base64_test_enc, buffer, 88);
+  TEST_ASSERT_EQUAL_MEMORY(base64_test_enc, buffer, 89);
 
   // Base64 decoding test
   src = base64_test_enc;
+  TEST_ASSERT(base64_decode(NULL, 0, &len, src, 88) == ERR_BASE64_BUFFER_TOO_SMALL);
+  TEST_ASSERT_EQUAL_UINT32(64, len);
   TEST_ASSERT(base64_decode(buffer, sizeof(buffer), &len, src, 88) == 0);
   TEST_ASSERT_EQUAL_MEMORY(base64_test_dec, buffer, 64);
 }

@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "utils/allocator.h"
+#include "utils/base64.h"
 #include "utils/byte_buffer.h"
 
 byte_buf_t* byte_buf_new() {
@@ -138,4 +139,27 @@ byte_buf_t* byte_buf_clonen(byte_buf_t* buf, size_t len) {
 void byte_buf_print(byte_buf_t* buf) {
   printf("byte_buf: cap = %zu, len = %zu\n", buf->cap, buf->len);
   dump_hex(buf->data, buf->len);
+}
+
+byte_buf_t* byte_buf2base64(byte_buf_t* buf) {
+  if (buf->len == 0) {
+    return NULL;
+  }
+
+  // gets encode buffer size
+  size_t encode_len = 0;
+  base64_encode(NULL, 0, &encode_len, buf->data, buf->len);
+
+  // allocats and encode data to base64
+  byte_buf_t* encode = byte_buf_new();
+  if (encode) {
+    byte_buf_reserve(encode, encode_len);
+    if (base64_encode(encode->data, encode->cap, &encode->len, buf->data, buf->len) == 0) {
+      return encode;
+    }
+
+    byte_buf_free(encode);
+    return NULL;
+  }
+  return NULL;
 }

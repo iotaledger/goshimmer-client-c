@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "unity/unity.h"
 #include "utils/byte_buffer.h"
@@ -58,10 +59,32 @@ void test_byte_buf() {
   byte_buf_free(c);
 }
 
+void test_byte2base64() {
+  char test_data[] = "HELLO IOTA!";
+  char exp_encode[] = "SEVMTE8gSU9UQSE=";
+
+  // data to byte buffer
+  byte_buf_t *buf = byte_buf_new_with_data((byte_t *)test_data, strlen(test_data));
+  TEST_ASSERT_NOT_NULL(buf);
+  TEST_ASSERT_EQUAL_MEMORY(test_data, buf->data, buf->len);
+
+  // byte buffer to base64
+  byte_buf_t *base64 = byte_buf2base64(buf);
+  TEST_ASSERT_NOT_NULL(base64);
+
+  // validating
+  TEST_ASSERT_EQUAL_MEMORY(exp_encode, base64->data, base64->len);
+
+  // clean up
+  byte_buf_free(buf);
+  byte_buf_free(base64);
+}
+
 int main() {
   UNITY_BEGIN();
 
   RUN_TEST(test_byte_buf);
+  RUN_TEST(test_byte2base64);
 
   return UNITY_END();
 }

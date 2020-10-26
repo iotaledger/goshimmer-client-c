@@ -110,6 +110,14 @@ void byte_buf_print(byte_buf_t* buf);
  */
 byte_buf_t* byte_buf2hex_string(byte_buf_t* buf);
 
+/**
+ * @brief Duplicates and converts the binary data to base64 encoded string, the returned object need to be freed.
+ *
+ * @param[in] buf A byte buffer
+ * @return byte_buf_t*
+ */
+byte_buf_t* byte_buf2base64(byte_buf_t* buf);
+
 #ifdef __cplusplus
 }
 #endif
