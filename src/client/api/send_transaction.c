@@ -7,7 +7,7 @@
 #include "utils/iota_str.h"
 
 // 0 on success
-static int request_builder(byte_t const tx_bytes[], http_buf_t *req) {
+static int request_builder(byte_t const tx_bytes[], byte_buf_t *req) {
   int ret = 0;
 
   cJSON *json_root = cJSON_CreateObject();
@@ -20,8 +20,8 @@ static int request_builder(byte_t const tx_bytes[], http_buf_t *req) {
   if (json_text == NULL) {
     ret = -1;
   } else {
-    http_buf_append(req, (byte_t *)json_text, strlen(json_text));
-    http_buf2str(req);
+    byte_buf_append(req, (byte_t *)json_text, strlen(json_text));
+    byte_buf2str(req);
     free(json_text);
   }
   cJSON_Delete(json_root);
@@ -52,8 +52,8 @@ int send_tx_bytes(tangle_client_conf_t const *conf, byte_t const tx_bytes[], res
     http_conf.port = conf->port;
   }
 
-  http_buf_t *http_req = http_buf_new();
-  http_buf_t *http_res = http_buf_new();
+  byte_buf_t *http_req = byte_buf_new();
+  byte_buf_t *http_res = byte_buf_new();
   if (http_res == NULL || http_req == NULL) {
     printf("[%s:%d]: OOM\n", __func__, __LINE__);
     // TODO
@@ -68,15 +68,16 @@ int send_tx_bytes(tangle_client_conf_t const *conf, byte_t const tx_bytes[], res
     goto done;
   }
 
+  printf("[%s:%d] req: %s\n", __func__, __LINE__, http_req->data);
+
   // send request via http client
   if (http_client_post(&http_conf, http_req, http_res) != 0) {
     printf("[%s:%d]: http client post failed\n", __func__, __LINE__);
     ret = -1;
     goto done;
   }
-  http_buf2str(http_res);
+  byte_buf2str(http_res);
 
-  printf("[%s:%d] req: %s\n", __func__, __LINE__, http_req->data);
   printf("[%s:%d] res: %s\n", __func__, __LINE__, http_res->data);
 
   // json deserialization
@@ -85,8 +86,8 @@ int send_tx_bytes(tangle_client_conf_t const *conf, byte_t const tx_bytes[], res
 done:
   // cleanup command
   iota_str_destroy(cmd);
-  http_buf_free(http_res);
-  http_buf_free(http_req);
+  byte_buf_free(http_res);
+  byte_buf_free(http_req);
 
   return ret;
 }

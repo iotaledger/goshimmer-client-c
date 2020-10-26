@@ -7,7 +7,7 @@
 #include "utils/iota_str.h"
 
 // 0 on success
-static int request_builder(byte_t const addr[], http_buf_t *req) {
+static int request_builder(byte_t const addr[], byte_buf_t *req) {
   int ret = 0;
   char addr_str[TANGLE_ADDRESS_BASE58_BUF];
 
@@ -22,8 +22,8 @@ static int request_builder(byte_t const addr[], http_buf_t *req) {
   if (json_text == NULL) {
     ret = -1;
   } else {
-    http_buf_append(req, (byte_t *)json_text, strlen(json_text));
-    http_buf2str(req);
+    byte_buf_append(req, (byte_t *)json_text, strlen(json_text));
+    byte_buf2str(req);
   }
   cJSON_Delete(json_root);
 
@@ -53,8 +53,8 @@ int get_funds(tangle_client_conf_t const *conf, byte_t const addr[], res_get_fun
     http_conf.port = conf->port;
   }
 
-  http_buf_t *http_req = http_buf_new();
-  http_buf_t *http_res = http_buf_new();
+  byte_buf_t *http_req = byte_buf_new();
+  byte_buf_t *http_res = byte_buf_new();
   if (http_res == NULL || http_req == NULL) {
     printf("[%s:%d]: OOM\n", __func__, __LINE__);
     // TODO
@@ -75,7 +75,7 @@ int get_funds(tangle_client_conf_t const *conf, byte_t const addr[], res_get_fun
     ret = -1;
     goto done;
   }
-  http_buf2str(http_res);
+  byte_buf2str(http_res);
 
   // printf("req: %s\n", http_req->data);
   // printf("res: %s\n", http_res->data);
@@ -86,8 +86,8 @@ int get_funds(tangle_client_conf_t const *conf, byte_t const addr[], res_get_fun
 done:
   // cleanup command
   iota_str_destroy(cmd);
-  http_buf_free(http_res);
-  http_buf_free(http_req);
+  byte_buf_free(http_res);
+  byte_buf_free(http_req);
 
   return ret;
 }

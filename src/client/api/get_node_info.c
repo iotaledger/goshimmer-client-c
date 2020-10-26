@@ -4,7 +4,6 @@
 #include "client/api/get_node_info.h"
 #include "client/api/json_utils.h"
 #include "client/network/http.h"
-#include "client/network/http_buffer.h"
 #include "utils/iota_str.h"
 
 int get_node_info(tangle_client_conf_t const *conf, res_node_info_t *res) {
@@ -29,7 +28,7 @@ int get_node_info(tangle_client_conf_t const *conf, res_node_info_t *res) {
     http_conf.port = conf->port;
   }
 
-  http_buf_t *http_res = http_buf_new();
+  byte_buf_t *http_res = byte_buf_new();
   if (http_res == NULL) {
     printf("[%s:%d]: OOM\n", __func__, __LINE__);
     // TODO
@@ -43,14 +42,14 @@ int get_node_info(tangle_client_conf_t const *conf, res_node_info_t *res) {
     ret = -1;
     goto done;
   }
-  http_buf2str(http_res);
+  byte_buf2str(http_res);
   // json deserialization
   deser_node_info((char const *const)http_res->data, res);
 
 done:
   // cleanup command
   iota_str_destroy(cmd);
-  http_buf_free(http_res);
+  byte_buf_free(http_res);
 
   return ret;
 }

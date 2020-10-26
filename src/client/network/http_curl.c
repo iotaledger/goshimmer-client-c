@@ -9,17 +9,17 @@ void http_client_init() { curl_global_init(CURL_GLOBAL_DEFAULT); }
 
 static size_t cb_write_fn(void* data, size_t size, size_t nmemb, void* userp) {
   size_t realsize = size * nmemb;
-  http_buf_t* mem = (http_buf_t*)userp;
+  byte_buf_t* mem = (byte_buf_t*)userp;
 
-  if (http_buf_append(mem, data, realsize) == false) {
+  if (byte_buf_append(mem, data, realsize) == false) {
     // OOM or NULL data
     printf("append data failed\n");
   }
   return realsize;
 }
 
-int http_client_post(http_client_config_t const* const config, http_buf_t const* const request,
-                     http_buf_t* const response) {
+int http_client_post(http_client_config_t const* const config, byte_buf_t const* const request,
+                     byte_buf_t* const response) {
   int ret = 0;
   CURL* curl = curl_easy_init();
   struct curl_slist* headers = NULL;
@@ -50,7 +50,7 @@ int http_client_post(http_client_config_t const* const config, http_buf_t const*
   return -1;
 }
 
-int http_client_get(http_client_config_t const* const config, http_buf_t* const response) {
+int http_client_get(http_client_config_t const* const config, byte_buf_t* const response) {
   int ret = 0;
   CURL* curl = curl_easy_init();
   struct curl_slist* headers = NULL;

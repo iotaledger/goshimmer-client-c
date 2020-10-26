@@ -18,7 +18,7 @@ static const char* TAG = "HTTP_CLIENT";
 
 static esp_err_t http_event_handler(esp_http_client_event_t* evt) {
   static uint64_t output_len;  // Stores number of bytes read
-  http_buf_t* buf = (http_buf_t*)evt->user_data;
+  byte_buf_t* buf = (byte_buf_t*)evt->user_data;
 
   switch (evt->event_id) {
     case HTTP_EVENT_ERROR:
@@ -42,7 +42,7 @@ static esp_err_t http_event_handler(esp_http_client_event_t* evt) {
       if (!esp_http_client_is_chunked_response(evt->client)) {
         // If user_data buffer is configured, copy the response into the buffer
         if (buf) {
-          http_buf_append(buf, evt->data, evt->data_len);
+          byte_buf_append(buf, evt->data, evt->data_len);
         } else {
           ESP_LOGE(TAG, "NULL buffer");
         }
@@ -102,8 +102,8 @@ void http_client_init() {}
 
 void http_client_clean() {}
 
-void http_client_post(http_buf_t* const response, http_client_config_t const* const config,
-                      http_buf_t const* const request) {
+void http_client_post(byte_buf_t* const response, http_client_config_t const* const config,
+                      byte_buf_t const* const request) {
   // POST
   esp_http_client_config_t esp_client_conf = {0};
   init_config(&esp_client_conf, config);
@@ -124,7 +124,7 @@ void http_client_post(http_buf_t* const response, http_client_config_t const* co
   esp_http_client_cleanup(client);
 }
 
-void http_client_get(http_buf_t* const response, http_client_config_t const* const config) {
+void http_client_get(byte_buf_t* const response, http_client_config_t const* const config) {
   esp_http_client_config_t esp_client_conf = {0};
   init_config(&esp_client_conf, config);
   esp_client_conf.user_data = (void*)response;

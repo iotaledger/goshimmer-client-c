@@ -78,7 +78,7 @@ end:
 }
 
 // 0 on success
-static int request_builder(addr_list_t *addresses, http_buf_t *req) {
+static int request_builder(addr_list_t *addresses, byte_buf_t *req) {
   int ret = 0;
   cJSON *json_root = cJSON_CreateObject();
   if (json_root == NULL) {
@@ -105,8 +105,8 @@ static int request_builder(addr_list_t *addresses, http_buf_t *req) {
   if (json_text == NULL) {
     ret = -1;
   } else {
-    http_buf_append(req, (byte_t *)json_text, strlen(json_text));
-    http_buf2str(req);
+    byte_buf_append(req, (byte_t *)json_text, strlen(json_text));
+    byte_buf2str(req);
     free(json_text);
   }
 
@@ -217,8 +217,8 @@ int get_unspent_outputs(tangle_client_conf_t const *conf, addr_list_t *addrs, un
     http_conf.port = conf->port;
   }
 
-  http_buf_t *http_req = http_buf_new();
-  http_buf_t *http_res = http_buf_new();
+  byte_buf_t *http_req = byte_buf_new();
+  byte_buf_t *http_res = byte_buf_new();
   if (http_res == NULL || http_req == NULL) {
     printf("[%s:%d]: OOM\n", __func__, __LINE__);
     ret = -1;
@@ -240,7 +240,7 @@ int get_unspent_outputs(tangle_client_conf_t const *conf, addr_list_t *addrs, un
     ret = -1;
     goto done;
   }
-  http_buf2str(http_res);
+  byte_buf2str(http_res);
 
   // printf("[%s:%d] res: %s\n", __func__, __LINE__, http_res->data);
 
@@ -250,7 +250,7 @@ int get_unspent_outputs(tangle_client_conf_t const *conf, addr_list_t *addrs, un
 done:
   // cleanup command
   iota_str_destroy(cmd);
-  http_buf_free(http_res);
-  http_buf_free(http_req);
+  byte_buf_free(http_res);
+  byte_buf_free(http_req);
   return ret;
 }
