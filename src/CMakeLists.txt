@@ -23,6 +23,7 @@ target_sources(
           "utils/iota_str.c"
           "utils/bitmask.c"
           "utils/byte_buffer.c"
+          "utils/base64.c"
           "wallet/address_manager.c"
           "wallet/wallet.c"
   PUBLIC "client/api/get_funds.h"
@@ -43,6 +44,7 @@ target_sources(
          "utils/iota_str.h"
          "utils/bitmask.h"
          "utils/byte_buffer.h"
+         "utils/base64.h"
          "wallet/address_manager.h"
          "wallet/wallet.h"
 )

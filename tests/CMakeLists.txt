@@ -25,5 +25,6 @@ test_case_add("core/test_unspent_outputs.c" core_unspent_outputs)
 
 test_case_add("utils/test_bitmask.c" utils_bitmask)
 test_case_add("utils/test_byte_buf.c" utils_byte_buffer)
+test_case_add("utils/test_base64.c" utils_base64)
 
 test_case_add("wallet/test_wallet_api.c" wallet_api)
