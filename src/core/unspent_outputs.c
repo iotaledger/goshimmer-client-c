@@ -16,6 +16,7 @@ int unspent_outputs_add(unspent_outputs_t **t, byte_t const addr[], uint64_t add
     return -1;
   }
   memcpy(elm->addr, addr, TANGLE_ADDRESS_BYTES);
+  elm->spent = false;
   elm->addr_index = addr_index;
   elm->ids = output_ids_clone(&ids);
   HASH_ADD(hh, *t, addr, TANGLE_ADDRESS_BYTES, elm);

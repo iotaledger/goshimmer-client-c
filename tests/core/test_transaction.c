@@ -156,7 +156,7 @@ void test_tx_empty_payload() {
   // dump tx object
   tx_print(&tx);
 
-  byte_buf_t* s = tx_2_bytes_string(&tx);
+  byte_buf_t* s = tx_2_base64(&tx);
   // dump tx byte string
   printf("%s\n", s->data);
 

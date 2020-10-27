@@ -45,6 +45,7 @@ void test_deser_unspent_outputs() {
 
   unspent_outputs_t* unspents = unspent_outputs_init();
   TEST_ASSERT(deser_unspent_outputs(data1, &unspents) == 0);
+  TEST_ASSERT_EQUAL_UINT64(1337, unspent_outputs_balance(&unspents));
   unspent_outputs_print(&unspents);
   unspent_outputs_free(&unspents);
   TEST_ASSERT_NULL(unspents);
@@ -56,6 +57,7 @@ void test_deser_unspent_outputs() {
 
   TEST_ASSERT(deser_unspent_outputs(data2, &unspents) == 0);
   unspent_outputs_print(&unspents);
+  TEST_ASSERT_EQUAL_UINT64(0, unspent_outputs_balance(&unspents));
   unspent_outputs_free(&unspents);
   TEST_ASSERT_NULL(unspents);
 
@@ -82,6 +84,7 @@ void test_deser_unspent_outputs() {
       "\"balances\":[{\"value\":1337,\"color\":\"IOTA\"}],\"inclusion_state\":{\"confirmed\":true,\"liked\":true,"
       "\"finalized\":true}}]}]}";
   TEST_ASSERT(deser_unspent_outputs(data5, &unspents) == 0);
+  TEST_ASSERT_EQUAL_UINT64(2674, unspent_outputs_balance(&unspents));
   // set/get spent addr
   byte_t spent_addr[TANGLE_ADDRESS_BYTES];
   address_from_base58("UKUjKvfrKR1RnRiBpXSKxo6DRnvW6oqffsGfDrDEiVMX", spent_addr);
