@@ -1,4 +1,4 @@
-# ########## Shimmer wallet library ################
+# ########## Pollen wallet library ################
 
 add_library(qian_bao STATIC)
 # the required minimum C standard
