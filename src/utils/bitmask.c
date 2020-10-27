@@ -8,14 +8,20 @@
 bitmask_t* bitmask_new() {
   bitmask_t* b = malloc(sizeof(bitmask_t));
   if (!b) {
+    printf("[%s:%d] malloc failed\n", __func__, __LINE__);
     return NULL;
   }
 
-  b->byte = calloc(0, 1);
+  /* Note: In esp-idf `calloc` is equivalent to `heap_caps_calloc`
+  that we use `malloc` and `memset` instead of `calloc`. */
+  // b->byte = calloc(0, 1);
+  b->byte = malloc(1);
   if (!b->byte) {
+    printf("[%s:%d] calloc failed\n", __func__, __LINE__);
     free(b);
     return NULL;
   }
+  memset(b->byte, 0, sizeof(byte_t));
   b->cap = 1;
   return b;
 }
