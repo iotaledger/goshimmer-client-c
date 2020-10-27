@@ -4,9 +4,6 @@
 #include "client/api/response_error.h"
 #include "utils/allocator.h"
 
-static char const *const key_err_code = "code";
-static char const *const key_err_msg = "message";
-
 void res_err_free(res_err_t *err) {
   if (err) {
     if (err->msg) {

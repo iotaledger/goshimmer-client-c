@@ -130,6 +130,7 @@ wallet_t* wallet_init(char const url[], uint16_t port, byte_t const seed[], uint
   // TODO: init local unspent/spent addresses
   bitmask_t* addr_mask = bitmask_new();
   if (addr_mask == NULL) {
+    printf("[%s %d] create bitmask failed\n", __func__, __LINE__);
     goto err;
   }
 
@@ -140,6 +141,7 @@ wallet_t* wallet_init(char const url[], uint16_t port, byte_t const seed[], uint
 
   ctx->addr_manager = am_new(seed, last_addr, addr_mask);
   if (ctx->addr_manager == NULL) {
+    printf("[%s %d] create address manager failed\n", __func__, __LINE__);
     goto err;
   }
   ctx->addr_manager->first_unspent_idx = first_unspent;
@@ -222,7 +224,7 @@ addr_list_t* wallet_unspent_addresses(wallet_t* w) { return am_unspent_addresses
 addr_list_t* wallet_spent_addresses(wallet_t* const w) { return am_spent_addresses(w->addr_manager); }
 
 bool wallet_refresh(wallet_t* w, bool include_spent) {
-  bool ret = false;
+  bool ret = true;
   addr_list_t* addrs = NULL;
   bool has_ids = false;
   if (include_spent) {
@@ -233,7 +235,8 @@ bool wallet_refresh(wallet_t* w, bool include_spent) {
 
   if (addrs == NULL || addr_list_len(addrs) == 0) {
     printf("[%s:%d] empty address list\n", __func__, __LINE__);
-    return false;
+    ret = false;
+    goto end;
   }
 
   unspent_outputs_t* res = unspent_outputs_init();
@@ -252,7 +255,6 @@ bool wallet_refresh(wallet_t* w, bool include_spent) {
       unspent_outputs_set_spent(&w->unspent, unspent->addr, is_spent);
     }
   }
-  ret = true;
 
 end:
   addr_list_free(addrs);

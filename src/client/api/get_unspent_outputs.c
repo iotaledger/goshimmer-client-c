@@ -197,6 +197,8 @@ end:
 int get_unspent_outputs(tangle_client_conf_t const *conf, addr_list_t *addrs, unspent_outputs_t **unspent) {
   int ret = 0;
   char const *cmd_unspent_outputs = "value/unspentOutputs";
+  byte_buf_t *http_req = NULL;
+  byte_buf_t *http_res = NULL;
   // compose restful api command
   iota_str_t *cmd = iota_str_new(conf->url);
   if (cmd == NULL) {
@@ -217,8 +219,8 @@ int get_unspent_outputs(tangle_client_conf_t const *conf, addr_list_t *addrs, un
     http_conf.port = conf->port;
   }
 
-  byte_buf_t *http_req = byte_buf_new();
-  byte_buf_t *http_res = byte_buf_new();
+  http_req = byte_buf_new();
+  http_res = byte_buf_new();
   if (http_res == NULL || http_req == NULL) {
     printf("[%s:%d]: OOM\n", __func__, __LINE__);
     ret = -1;

@@ -32,6 +32,8 @@ static int request_builder(byte_t const tx_bytes[], byte_buf_t *req) {
 int send_tx_bytes(tangle_client_conf_t const *conf, byte_t const tx_bytes[], res_send_tx_t *res) {
   int ret = 0;
   char const *const cmd_send_tx = "value/sendTransaction";
+  byte_buf_t *http_req = NULL;
+  byte_buf_t *http_res = NULL;
   // compose restful api command
   iota_str_t *cmd = iota_str_new(conf->url);
   if (cmd == NULL) {
@@ -52,8 +54,8 @@ int send_tx_bytes(tangle_client_conf_t const *conf, byte_t const tx_bytes[], res
     http_conf.port = conf->port;
   }
 
-  byte_buf_t *http_req = byte_buf_new();
-  byte_buf_t *http_res = byte_buf_new();
+  http_req = byte_buf_new();
+  http_res = byte_buf_new();
   if (http_res == NULL || http_req == NULL) {
     printf("[%s:%d]: OOM\n", __func__, __LINE__);
     // TODO

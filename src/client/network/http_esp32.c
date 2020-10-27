@@ -102,9 +102,9 @@ void http_client_init() {}
 
 void http_client_clean() {}
 
-void http_client_post(byte_buf_t* const response, http_client_config_t const* const config,
-                      byte_buf_t const* const request) {
-  // POST
+int http_client_post(http_client_config_t const* const config, byte_buf_t const* const request,
+                     byte_buf_t* const response) {
+  int ret = 0;
   esp_http_client_config_t esp_client_conf = {0};
   init_config(&esp_client_conf, config);
   esp_client_conf.user_data = (void*)response;
@@ -120,11 +120,14 @@ void http_client_post(byte_buf_t* const response, http_client_config_t const* co
              esp_http_client_get_content_length(client));
   } else {
     ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
+    ret = -1;
   }
   esp_http_client_cleanup(client);
+  return ret;
 }
 
-void http_client_get(byte_buf_t* const response, http_client_config_t const* const config) {
+int http_client_get(http_client_config_t const* const config, byte_buf_t* const response) {
+  int ret = 0;
   esp_http_client_config_t esp_client_conf = {0};
   init_config(&esp_client_conf, config);
   esp_client_conf.user_data = (void*)response;
@@ -137,7 +140,9 @@ void http_client_get(byte_buf_t* const response, http_client_config_t const* con
              esp_http_client_get_content_length(client));
   } else {
     ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
+    ret = -1;
   }
 
   esp_http_client_cleanup(client);
+  return ret;
 }

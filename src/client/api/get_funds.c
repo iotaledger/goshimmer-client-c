@@ -33,6 +33,8 @@ static int request_builder(byte_t const addr[], byte_buf_t *req) {
 int get_funds(tangle_client_conf_t const *conf, byte_t const addr[], res_get_funds_t *res) {
   int ret = 0;
   char const *const cmd_faucet = "faucet";
+  byte_buf_t *http_req = NULL;
+  byte_buf_t *http_res = NULL;
   // compose restful api command
   iota_str_t *cmd = iota_str_new(conf->url);
   if (cmd == NULL) {
@@ -53,8 +55,8 @@ int get_funds(tangle_client_conf_t const *conf, byte_t const addr[], res_get_fun
     http_conf.port = conf->port;
   }
 
-  byte_buf_t *http_req = byte_buf_new();
-  byte_buf_t *http_res = byte_buf_new();
+  http_req = byte_buf_new();
+  http_res = byte_buf_new();
   if (http_res == NULL || http_req == NULL) {
     printf("[%s:%d]: OOM\n", __func__, __LINE__);
     // TODO
