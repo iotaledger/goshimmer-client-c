@@ -1,0 +1,25 @@
+{
+    "name": "pollen_qianbao",
+    "version": "0.0.1",
+    "keywords": "crypto, iota, wallet",
+    "description": "IOTA Pollen wallet library",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/oopsmonk/pollen_qianbao.git",
+    },
+    "authors": {
+        "name": "Sam Chen",
+        "email": "sam.chen@iota.org",
+        "maintainer": true
+    },
+    "license": "Apache-2.0",
+    "frameworks": "*",
+    "platforms": "espressif32",
+    "dependencies": [
+        {
+            "name": "uthash",
+            "version": "https://github.com/troydhanson/uthash.git#1124f0a70b0714886402c3c0df03d037e3c4d57a"
+        }
+    ]
+}
+
