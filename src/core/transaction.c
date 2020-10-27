@@ -239,9 +239,6 @@ int tx_sign(transaction_t *tx, byte_t seed[]) {
     ed_signatures_add(&tx->signatures, out->address, addr_pub, addr_sig);
   }
 
-  // dump tx object
-  tx_print(tx);
-
   byte_buf_free(essence);
   return 0;
 }
@@ -274,7 +271,7 @@ void tx_print(transaction_t *tx) {
   printf("}\n");
 }
 
-byte_buf_t *tx_2_bytes_string(transaction_t *tx) {
+byte_buf_t *tx_2_base64(transaction_t *tx) {
   byte_buf_t *bytes = tx_essence(tx);
   byte_t addr_version = 1;  // ed25519 scheme
   size_t signature_bytes = ed_signatures_count(&tx->signatures) * (1 + ED_PUBLIC_KEY_BYTES + ED_SIGNATURE_BYTES);
@@ -291,7 +288,7 @@ byte_buf_t *tx_2_bytes_string(transaction_t *tx) {
   byte_t end = 0x0;
   byte_buf_append(bytes, &end, 1);
   // bin to hex string
-  byte_buf_t *str = byte_buf2hex_string(bytes);
+  byte_buf_t *str = byte_buf2base64(bytes);
   // clean up
   byte_buf_free(bytes);
   return str;

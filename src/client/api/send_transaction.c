@@ -68,7 +68,7 @@ int send_tx_bytes(tangle_client_conf_t const *conf, byte_t const tx_bytes[], res
     goto done;
   }
 
-  printf("[%s:%d] req: %s\n", __func__, __LINE__, http_req->data);
+  // printf("[%s:%d] req: %s\n", __func__, __LINE__, http_req->data);
 
   // send request via http client
   if (http_client_post(&http_conf, http_req, http_res) != 0) {
@@ -78,7 +78,7 @@ int send_tx_bytes(tangle_client_conf_t const *conf, byte_t const tx_bytes[], res
   }
   byte_buf2str(http_res);
 
-  printf("[%s:%d] res: %s\n", __func__, __LINE__, http_res->data);
+  // printf("[%s:%d] res: %s\n", __func__, __LINE__, http_res->data);
 
   // json deserialization
   deser_send_tx((char const *const)http_res->data, res);

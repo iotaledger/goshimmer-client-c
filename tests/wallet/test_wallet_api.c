@@ -81,23 +81,25 @@ void test_wallet_address_manager() {
   am_free(am);
 }
 
-void test_wallet() {
-  wallet_t *w = wallet_init(g_endpoint, 0, g_seed, 3, 1, 3);
+void test_wallet_balance() {
+  wallet_t *w = wallet_init(g_endpoint, 0, g_seed, 7, 6, 7);
   TEST_ASSERT_NOT_NULL(w);
   TEST_ASSERT_NOT_NULL(w->addr_manager->seed);
+
+  wallet_status_print(w);
 
   bool synced = wallet_is_node_synced(w);
   printf("Is endpoint synced? %s\n", synced ? "Yes" : "No");
   printf("balance: %" PRIu64 "\n", wallet_balance(w));
-  unspent_outputs_print(&w->unspent);
 
   wallet_free(w);
 }
 
 void test_wallet_request_funds() {
-  wallet_t *w = wallet_init(g_endpoint, 0, g_seed, 3, 1, 3);
+  wallet_t *w = wallet_init(g_endpoint, 0, g_seed, 7, 6, 7);
   TEST_ASSERT_NOT_NULL(w);
   TEST_ASSERT_NOT_NULL(w->addr_manager->seed);
+  wallet_status_print(w);
 
   uint64_t balance_a = wallet_balance(w);
   TEST_ASSERT(wallet_request_funds(w) == 0);
@@ -109,15 +111,21 @@ void test_wallet_request_funds() {
 }
 
 void test_wallet_send_funds() {
-  wallet_t *w = wallet_init(g_endpoint, 0, g_seed, 3, 1, 3);
+  wallet_t *w = wallet_init(g_endpoint, 0, g_seed, 7, 6, 7);
   TEST_ASSERT_NOT_NULL(w);
   TEST_ASSERT_NOT_NULL(w->addr_manager->seed);
+  wallet_status_print(w);
 
   send_funds_op_t send_op = {};
-  send_op.amount = 100;
-  address_from_base58("YQp3UbW56TX9HTm1XTUw1tRWHhLg8tKnNhT5FDq5MLNb", send_op.receiver);
+  send_op.amount = 1000;
+  address_from_base58("bMEJhF4Go8sJTnZiWtfjmKXeo4Pb3Msz3Mvp7qeAzQy6", send_op.receiver);
 
   wallet_send_funds(w, &send_op);
+  sleep(10);
+
+  // sync with the node
+  wallet_refresh(w, false);
+  wallet_status_print(w);
 
   wallet_free(w);
 }
@@ -127,7 +135,7 @@ int main() {
   seed_from_base58("332Db2RL4NHggDX4utnn5sCwTVTqUQJ3vC42TGZFC8hK", g_seed);
 
   RUN_TEST(test_wallet_address_manager);
-  // RUN_TEST(test_wallet);
+  // RUN_TEST(test_wallet_balance);
   // RUN_TEST(test_wallet_request_funds);
   // RUN_TEST(test_wallet_send_funds);
 

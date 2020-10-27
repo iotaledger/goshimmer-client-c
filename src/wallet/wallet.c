@@ -7,6 +7,117 @@
 #include "client/api/send_transaction.h"
 #include "wallet/wallet.h"
 
+static tx_inputs_t* wallet_build_inputs(wallet_t* w, unspent_outputs_t* unspent) {
+  tx_inputs_t* inputs = tx_inputs_new();
+  byte_t output_id[TX_OUTPUT_ID_BYTES] = {};
+  unspent_outputs_t *input, *input_tmp;
+  HASH_ITER(hh, unspent, input, input_tmp) {
+    output_ids_t *id, *id_tmp;
+    memcpy(output_id, input->addr, TANGLE_ADDRESS_BYTES);
+    HASH_ITER(hh, input->ids, id, id_tmp) {
+      memcpy(output_id + TANGLE_ADDRESS_BYTES, id->id, TX_ID_BYTES);
+      tx_inputs_push(inputs, output_id);
+    }
+  }
+
+  return inputs;
+}
+
+static tx_outputs_t* wallet_build_outputs(wallet_t* w, send_funds_op_t* dest, unspent_outputs_t* unspent) {
+  tx_outputs_t* outputs = tx_outputs_new();
+  uint64_t output_balance = unspent_outputs_balance_with_color(&unspent, dest->color);
+  bool recv_eq_remainder = false;
+  // is the remainder needed?
+  if (output_balance > dest->amount) {
+    if (empty_byte_array(dest->remainder, TANGLE_ADDRESS_BYTES)) {
+      tx_output_t out = {};
+      for (uint64_t i = w->addr_manager->first_unspent_idx; i <= w->addr_manager->last_addr_index; i++) {
+        address_get(w->addr_manager->seed, i, ADDRESS_VER_ED25519, dest->remainder);
+        if (unspent_outputs_find(&unspent, dest->remainder) == NULL) {
+          out.addr_index = i;
+          break;
+        }
+        if (i == w->addr_manager->last_addr_index) {
+          am_get_new_address(w->addr_manager, dest->remainder);
+          out.addr_index = w->addr_manager->last_addr_index + 1;
+        }
+      }
+
+      memcpy(out.address, dest->remainder, TANGLE_ADDRESS_BYTES);
+
+      // create balance
+      balance_t balance = {};
+      memcpy(balance.color, dest->color, BALANCE_COLOR_BYTES);
+
+      if (memcmp(dest->receiver, dest->remainder, TANGLE_ADDRESS_BYTES) == 0) {
+        // put all outputs in the same address
+        recv_eq_remainder = true;
+        balance.value = (int64_t)output_balance;
+      } else {
+        balance.value = (int64_t)output_balance - dest->amount;
+      }
+      out.balances = balance_list_new();
+      balance_list_push(out.balances, &balance);
+
+      // add to transaction output list
+      tx_outputs_push(outputs, &out);
+
+      balance_list_free(out.balances);
+    }
+  }
+
+  if (!recv_eq_remainder) {
+    // add unspent to output
+    // creates output with dest address
+    tx_output_t out = {};
+    balance_t bal = {};
+    memcpy(out.address, dest->receiver, TANGLE_ADDRESS_BYTES);
+    memcpy(bal.color, dest->color, BALANCE_COLOR_BYTES);
+    bal.value = dest->amount;
+    out.balances = balance_list_new();
+    balance_list_push(out.balances, &bal);
+    tx_outputs_push(outputs, &out);
+    balance_list_free(out.balances);
+  }
+
+  return outputs;
+}
+
+static int wallet_sign_tx(wallet_t* w, transaction_t* tx, unspent_outputs_t* inputs) {
+  if (tx == NULL || tx->outputs == NULL || tx->inputs == NULL) {
+    printf("[%s:%d] null parameters\n", __func__, __LINE__);
+    return -1;
+  }
+
+  // calculate essence of the transaction
+  byte_buf_t* essence = tx_essence(tx);
+  if (essence == NULL) {
+    printf("[%s:%d] transaction essence calculation failed\n", __func__, __LINE__);
+    return -1;
+  }
+
+  // get signature
+  byte_t addr_pub[ED_PUBLIC_KEY_BYTES] = {};
+  byte_t addr_priv[ED_PRIVATE_KEY_BYTES] = {};
+  byte_t addr_sig[ED_SIGNATURE_BYTES] = {};
+  tx_output_t* out = NULL;
+
+  if (tx->signatures) {
+    ed_signatures_destory(&tx->signatures);
+  }
+  tx->signatures = ed_signatures_init();
+
+  unspent_outputs_t *in, *in_tmp;
+  HASH_ITER(hh, inputs, in, in_tmp) {
+    sign_signature(w->addr_manager->seed, in->addr_index, essence->data, essence->len, addr_sig);
+    address_ed25519_keypair(w->addr_manager->seed, in->addr_index, addr_pub, addr_priv);
+    ed_signatures_add(&tx->signatures, in->addr, addr_pub, addr_sig);
+  }
+
+  byte_buf_free(essence);
+  return 0;
+}
+
 wallet_t* wallet_init(char const url[], uint16_t port, byte_t const seed[], uint64_t last_addr, uint64_t first_unspent,
                       uint64_t last_unspent) {
   wallet_t* ctx = malloc(sizeof(wallet_t));
@@ -59,8 +170,6 @@ wallet_t* wallet_init(char const url[], uint16_t port, byte_t const seed[], uint
     bitmask_free(addr_mask);
   }
 
-  // show local wallet info
-  wallet_status_print(ctx);
   return ctx;
 
 err:
@@ -157,11 +266,6 @@ uint64_t wallet_balance(wallet_t* w) {
   return unspent_outputs_balance(&w->unspent);
 }
 
-uint64_t wallet_balance_with_color(wallet_t* w, byte_t color[]) {
-  wallet_refresh(w, false);
-  return unspent_outputs_balance_with_color(&w->unspent, color);
-}
-
 int wallet_request_funds(wallet_t* w) {
   int ret = -1;
   byte_t receiver[TANGLE_ADDRESS_BYTES];
@@ -172,94 +276,31 @@ int wallet_request_funds(wallet_t* w) {
   return ret;
 }
 
-tx_inputs_t* wallet_build_inputs(wallet_t* w, unspent_outputs_t* unspent) {
-  tx_inputs_t* inputs = tx_inputs_new();
-  byte_t output_id[TX_OUTPUT_ID_BYTES] = {};
-  unspent_outputs_t *input, *input_tmp;
-  HASH_ITER(hh, unspent, input, input_tmp) {
-    output_ids_t *id, *id_tmp;
-    memcpy(output_id, input->addr, TANGLE_ADDRESS_BYTES);
-    HASH_ITER(hh, input->ids, id, id_tmp) {
-      memcpy(output_id + TANGLE_ADDRESS_BYTES, id->id, TX_ID_BYTES);
-      tx_inputs_push(inputs, output_id);
-    }
-  }
-
-  // dump inputs for debugging
-  // tx_inputs_print(inputs);
-  return inputs;
-}
-
-tx_outputs_t* wallet_build_outputs(wallet_t* w, send_funds_op_t* dest, unspent_outputs_t* unspent) {
-  tx_outputs_t* outputs = tx_outputs_new();
-  uint64_t output_balance = unspent_outputs_balance_with_color(&unspent, dest->color);
-  // is the remainder needed?
-  if (output_balance > dest->amount) {
-    if (empty_byte_array(dest->remainder, TANGLE_ADDRESS_BYTES)) {
-      wallet_remainder_address(w, dest->remainder);
-
-      tx_output_t out = {};
-      out.addr_index = wallet_remainder_address_index(w);
-      memcpy(out.address, dest->receiver, TANGLE_ADDRESS_BYTES);
-
-      // create balance
-      balance_t balance = {};
-      memcpy(balance.color, dest->color, BALANCE_COLOR_BYTES);
-      balance.value = (int64_t)output_balance - dest->amount;
-      out.balances = balance_list_new();
-      balance_list_push(out.balances, &balance);
-
-      // add to transaction output list
-      tx_outputs_push(outputs, &out);
-
-      balance_list_free(out.balances);
-    }
-  }
-
-  // add unspent to output
-  unspent_outputs_t *output, *output_tmp;
-  HASH_ITER(hh, unspent, output, output_tmp) {
-    // get address
-    tx_output_t out = {};
-    out.addr_index = output->addr_index;
-    memcpy(out.address, output->addr, TANGLE_ADDRESS_BYTES);
-
-    // create balance
-    balance_t balance = {};
-    memcpy(balance.color, dest->color, BALANCE_COLOR_BYTES);
-    balance.value = (int64_t)output_ids_balance_with_color(&output->ids, dest->color);
-    out.balances = balance_list_new();
-    balance_list_push(out.balances, &balance);
-
-    // add to transaction output list
-    tx_outputs_push(outputs, &out);
-
-    balance_list_free(out.balances);
-  }
-
-  // tx_outputs_print(outputs);
-  return outputs;
-}
-
 int wallet_send_funds(wallet_t* w, send_funds_op_t* dest) {
+  int ret = 0;
   // validating send funds options
   if (dest->amount <= 0 || empty_byte_array(dest->receiver, TANGLE_ADDRESS_BYTES)) {
     printf("[%s:%d] Invalid amount or receiver address\n", __func__, __LINE__);
     return -1;
   }
 
+  // sync with node before sending
   wallet_refresh(w, false);
 
   // looking for request founds in current unspent outputs
   unspent_outputs_t* consumed_outputs = unspent_outputs_required_outputs(&w->unspent, dest->amount, dest->color);
-  // unspent_outputs_print(&consumed_outputs);
+  if (!consumed_outputs) {
+    printf("[%s:%d] error on finding outputs\n", __func__, __LINE__);
+    return -1;
+  }
 
   // is the balance enough?
   uint64_t output_balance = unspent_outputs_balance_with_color(&consumed_outputs, dest->color);
   if (output_balance < dest->amount) {
     printf("[%s:%d] Insufficient balance (balance %" PRIu64 " < required %" PRIu64 ")\n", __func__, __LINE__,
            output_balance, dest->amount);
-    return -1;
+    ret = -1;
+    goto end;
   }
 
   // build transaction
@@ -271,15 +312,17 @@ int wallet_send_funds(wallet_t* w, send_funds_op_t* dest) {
   tx.outputs = wallet_build_outputs(w, dest, consumed_outputs);
 
   // sign transaction
-  tx_sign(&tx, w->addr_manager->seed);
+  wallet_sign_tx(w, &tx, consumed_outputs);
 
   // validate tx
   if (tx_signautres_valid(&tx) == false) {
     printf("[%s:%d] transaction validation failed\n", __func__, __LINE__);
+    ret = -1;
+    goto end;
 
   } else {
     res_send_tx_t res = {};
-    byte_buf_t* tx_bytes = tx_2_bytes_string(&tx);
+    byte_buf_t* tx_bytes = tx_2_base64(&tx);
     if (send_tx_bytes(&w->endpoint, tx_bytes->data, &res) == 0) {
       // success
       printf("[%s:%d] message ID: %s\n", __func__, __LINE__, res.msg_id);
@@ -296,12 +339,13 @@ int wallet_send_funds(wallet_t* w, send_funds_op_t* dest) {
     am_mark_spent_address(w->addr_manager, output_sent->addr_index);
   }
 
+end:
   // clean up
   tx_inputs_free(tx.inputs);
   tx_outputs_free(tx.outputs);
   ed_signatures_destory(&tx.signatures);
   unspent_outputs_free(&consumed_outputs);
-  return -1;
+  return ret;
 }
 
 void wallet_status_print(wallet_t* w) {

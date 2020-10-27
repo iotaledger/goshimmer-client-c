@@ -26,17 +26,6 @@ typedef struct {
 extern "C" {
 #endif
 
-// creates or init a wallet instance
-
-/**
- * @brief Creates or initializes a wallet instance
- *
- * @param[in] url The URL of an endpoint
- * @param[in] port The port number, 0 for default port (8443 or 443)
- * @param[in] seed The seed, NULL for random seed
- * @return wallet_t* A wallet instance
- */
-
 /**
  * @brief Creates or initializes a wallet instance
  *
@@ -141,31 +130,28 @@ int wallet_request_funds(wallet_t* w);
  */
 uint64_t wallet_balance(wallet_t* w);
 
-// issues a payment of the given amount to the given address.
+/**
+ * @brief Prints out local wallet status
+ *
+ * @param[in] w A wallet instance
+ */
+void wallet_status_print(wallet_t* w);
+
+/**
+ * @brief Issues a payment of the given option
+ *
+ * @param[in] w A wallet instance
+ * @param[in] dest A send funds option
+ * @return int 0 on success
+ */
 int wallet_send_funds(wallet_t* w, send_funds_op_t* dest);
 
-void wallet_status_print(wallet_t* w);
 // ========= TODO =========
-
-// returns the unspent outputs that are available for spending.
-int wallet_unspent_outputs(wallet_t* w, send_funds_op_t* opt);
-
-// issues a payment of the given amount to the given address.
-int wallet_send_funds_opt();
 
 // creates a new colored token with the given details.
 int wallet_create_asset();
 int wallet_update_asset();
 int wallet_delete_asset();
-
-// the pending balance of the funds managed by this wallet.
-uint64_t wallet_balance_pending(wallet_t* w);
-
-// build input for the transfer
-// int wallet_build_inputs();
-
-// build outputs for the transfer
-// int wallet_build_outputs();
 
 #ifdef __cplusplus
 }
