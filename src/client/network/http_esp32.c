@@ -22,19 +22,19 @@ static esp_err_t http_event_handler(esp_http_client_event_t* evt) {
 
   switch (evt->event_id) {
     case HTTP_EVENT_ERROR:
-      ESP_LOGD(TAG, "HTTP_EVENT_ERROR");
+      // ESP_LOGD(TAG, "HTTP_EVENT_ERROR");
       break;
     case HTTP_EVENT_ON_CONNECTED:
-      ESP_LOGD(TAG, "HTTP_EVENT_ON_CONNECTED");
+      // ESP_LOGD(TAG, "HTTP_EVENT_ON_CONNECTED");
       break;
     case HTTP_EVENT_HEADER_SENT:
-      ESP_LOGD(TAG, "HTTP_EVENT_HEADER_SENT");
+      // ESP_LOGD(TAG, "HTTP_EVENT_HEADER_SENT");
       break;
     case HTTP_EVENT_ON_HEADER:
-      ESP_LOGD(TAG, "HTTP_EVENT_ON_HEADER, key=%s, value=%s", evt->header_key, evt->header_value);
+      // ESP_LOGD(TAG, "HTTP_EVENT_ON_HEADER, key=%s, value=%s", evt->header_key, evt->header_value);
       break;
     case HTTP_EVENT_ON_DATA:
-      ESP_LOGD(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
+      // ESP_LOGD(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
       /*
        *  Check for chunked encoding is added as the URL for chunked encoding used in this example returns binary data.
        *  However, event handler can also be used in case chunked encoding is used.
@@ -51,11 +51,11 @@ static esp_err_t http_event_handler(esp_http_client_event_t* evt) {
 
       break;
     case HTTP_EVENT_ON_FINISH:
-      ESP_LOGD(TAG, "HTTP_EVENT_ON_FINISH");
+      // ESP_LOGD(TAG, "HTTP_EVENT_ON_FINISH");
       output_len = 0;
       break;
     case HTTP_EVENT_DISCONNECTED:
-      ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
+      // ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
       int mbedtls_err = 0;
       esp_err_t err = esp_tls_get_and_clear_last_error(evt->data, &mbedtls_err, NULL);
       if (err != 0) {
@@ -76,10 +76,7 @@ static void http_download_chunk(void) {
   esp_http_client_handle_t client = esp_http_client_init(&config);
   esp_err_t err = esp_http_client_perform(client);
 
-  if (err == ESP_OK) {
-    ESP_LOGI(TAG, "HTTP chunk encoding Status = %d, content_length = %d", esp_http_client_get_status_code(client),
-             esp_http_client_get_content_length(client));
-  } else {
+  if (err != ESP_OK) {
     ESP_LOGE(TAG, "Error perform http request %s", esp_err_to_name(err));
   }
   esp_http_client_cleanup(client);
@@ -115,10 +112,7 @@ int http_client_post(http_client_config_t const* const config, byte_buf_t const*
   esp_http_client_set_post_field(client, (char const*)request->data, request->len);
 
   esp_err_t err = esp_http_client_perform(client);
-  if (err == ESP_OK) {
-    ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %d", esp_http_client_get_status_code(client),
-             esp_http_client_get_content_length(client));
-  } else {
+  if (err != ESP_OK) {
     ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
     ret = -1;
   }
@@ -135,10 +129,7 @@ int http_client_get(http_client_config_t const* const config, byte_buf_t* const 
   esp_http_client_handle_t client = esp_http_client_init(&esp_client_conf);
 
   esp_err_t err = esp_http_client_perform(client);
-  if (err == ESP_OK) {
-    ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %d", esp_http_client_get_status_code(client),
-             esp_http_client_get_content_length(client));
-  } else {
+  if (err != ESP_OK) {
     ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
     ret = -1;
   }
