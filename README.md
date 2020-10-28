@@ -13,7 +13,8 @@ This library is is under developing and tested with [GoShimmer-0.3.0](https://gi
 
 # Applications  
 
-[pollen_qianbao_cli](https://github.com/oopsmonk/pollen_qianbao_cli): CLI wallet for Linux and Raspberry Pi.
+[pollen_qianbao_cli](https://github.com/oopsmonk/pollen_qianbao_cli): CLI wallet for Linux and Raspberry Pi.  
+
 [pollen_qianbao_esp32](https://github.com/oopsmonk/iota_c_platformIO/tree/dev_pollen_esp32) (WIP): CLI wallet for ESP32 
 
 # Wallet APIs  
