@@ -56,12 +56,14 @@ static esp_err_t http_event_handler(esp_http_client_event_t* evt) {
       break;
     case HTTP_EVENT_DISCONNECTED:
       // ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
-      int mbedtls_err = 0;
-      esp_err_t err = esp_tls_get_and_clear_last_error(evt->data, &mbedtls_err, NULL);
-      if (err != 0) {
-        output_len = 0;
-        ESP_LOGI(TAG, "Last esp error code: 0x%x", err);
-        ESP_LOGI(TAG, "Last mbedtls failure: 0x%x", mbedtls_err);
+      {
+        int mbedtls_err = 0;
+        esp_err_t err = esp_tls_get_and_clear_last_error(evt->data, &mbedtls_err, NULL);
+        if (err != 0) {
+          output_len = 0;
+          ESP_LOGI(TAG, "Last esp error code: 0x%x", err);
+          ESP_LOGI(TAG, "Last mbedtls failure: 0x%x", mbedtls_err);
+        }
       }
       break;
   }
