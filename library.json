@@ -1,11 +1,11 @@
 {
-    "name": "pollen_qianbao",
+    "name": "goshimmer-client",
     "version": "0.0.1",
     "keywords": "crypto, iota, wallet",
-    "description": "IOTA Pollen wallet library",
+    "description": "IOTA GoShimmer client library",
     "repository": {
         "type": "git",
-        "url": "https://github.com/oopsmonk/pollen_qianbao.git"
+        "url": "https://github.com/oopsmonk/goshimmer-client-c.git"
     },
     "authors": {
         "name": "Sam Chen",
