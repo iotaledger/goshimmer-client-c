@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(pollen_qianbao DESCRIPTION "IOTA Pollen Wallet")
+project(goshimmer_client DESCRIPTION "IOTA GoShimmer client library")
 
 enable_language(C)
 
-option(WALLET_TESTS "Enable Wallet library test cases" OFF)
+option(SHIMMER_TESTS "Enable library test cases" OFF)
 
 # fetch external libs
 include(ExternalProject)
 
-if(WALLET_TESTS)
+if(SHIMMER_TESTS)
   enable_testing()
   include(cmake/unity.cmake)
 endif()
@@ -51,6 +51,6 @@ link_directories("${CMAKE_INSTALL_PREFIX}/lib")
 
 add_subdirectory(src)
 
-if(WALLET_TESTS)
+if(SHIMMER_TESTS)
   add_subdirectory(tests)
 endif()

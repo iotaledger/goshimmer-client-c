@@ -1,11 +1,11 @@
 # ########## Pollen wallet library ################
 
-add_library(qian_bao STATIC)
+add_library(goshimmer_client STATIC)
 # the required minimum C standard
-set_target_properties(qian_bao PROPERTIES C_STANDARD_REQUIRED NO C_STANDARD 99)
+set_target_properties(goshimmer_client PROPERTIES C_STANDARD_REQUIRED NO C_STANDARD 99)
 
 target_sources(
- qian_bao
+ goshimmer_client
   PRIVATE "client/api/get_funds.c"
           "client/api/get_node_info.c"
           "client/api/get_unspent_outputs.c"
@@ -47,29 +47,25 @@ target_sources(
          "wallet/wallet.h"
 )
 
-target_include_directories(qian_bao PUBLIC 
+target_include_directories(goshimmer_client PUBLIC 
   "${PROJECT_SOURCE_DIR}/src"
   "${CURL_INCLUDE_DIRS}"
   "${CMAKE_INSTALL_PREFIX}/include"
   "${CMAKE_INSTALL_PREFIX}/include/cjson" # esp32 compatibility
 )
 
-add_dependencies(qian_bao sodium ext_base58 ext_uthash ext_cjson)
+add_dependencies(goshimmer_client sodium ext_base58 ext_uthash ext_cjson)
 
-target_link_libraries(qian_bao INTERFACE base58 sodium ${CURL_LIBRARIES} cjson)
+target_link_libraries(goshimmer_client INTERFACE base58 sodium ${CURL_LIBRARIES} cjson)
 
 if(HAS_ASAN_ENABLED)
-  target_link_libraries(qian_bao PRIVATE asan)
+  target_link_libraries(goshimmer_client PRIVATE asan)
 endif()
 
 # install client lib and headers
-install(TARGETS qian_bao DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+install(TARGETS goshimmer_client DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
 install(
   DIRECTORY "${PROJECT_SOURCE_DIR}/src/core/"
   DESTINATION "${CMAKE_INSTALL_PREFIX}/include/core"
   FILES_MATCHING
   PATTERN "*.h")
-
-# ########## IOTA wallet app ################
-
-# add_executable(wallet_app)
