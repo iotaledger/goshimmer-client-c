@@ -248,11 +248,15 @@ bool wallet_refresh(wallet_t* w, bool include_spent) {
       unspent_outputs_t* elm = unspent_outputs_find(&w->unspent, unspent->addr);
       bool is_spent = false;
       if (elm) {
+        // restore the spent status
         is_spent = elm->spent;
+        unspent_outputs_update(&w->unspent, unspent->addr, unspent->ids);
+        // mark the output as spent if we already marked it as spent locally
+        unspent_outputs_set_spent(&w->unspent, unspent->addr, is_spent);
+      } else {
+        // TODO: we don't know the address index from unspent outputs API response
+        unspent_outputs_add(&w->unspent, unspent->addr, unspent->addr_index, unspent->ids);
       }
-      unspent_outputs_update(&w->unspent, unspent->addr, unspent->ids);
-      // mark the output as spent if we already marked it as spent locally
-      unspent_outputs_set_spent(&w->unspent, unspent->addr, is_spent);
     }
   }
 
@@ -280,6 +284,8 @@ int wallet_request_funds(wallet_t* w) {
 
 int wallet_send_funds(wallet_t* w, send_funds_op_t* dest) {
   int ret = 0;
+  transaction_t tx = {};
+
   // validating send funds options
   if (dest->amount <= 0 || empty_byte_array(dest->receiver, TANGLE_ADDRESS_BYTES)) {
     printf("[%s:%d] Invalid amount or receiver address\n", __func__, __LINE__);
@@ -306,7 +312,6 @@ int wallet_send_funds(wallet_t* w, send_funds_op_t* dest) {
   }
 
   // build transaction
-  transaction_t tx = {};
   // transaction inputs
   tx.inputs = wallet_build_inputs(w, consumed_outputs);
 
@@ -343,9 +348,15 @@ int wallet_send_funds(wallet_t* w, send_funds_op_t* dest) {
 
 end:
   // clean up
-  tx_inputs_free(tx.inputs);
-  tx_outputs_free(tx.outputs);
-  ed_signatures_destory(&tx.signatures);
+  if (tx.inputs) {
+    tx_inputs_free(tx.inputs);
+  }
+  if (tx.outputs) {
+    tx_outputs_free(tx.outputs);
+  }
+  if (tx.signatures) {
+    ed_signatures_destory(&tx.signatures);
+  }
   unspent_outputs_free(&consumed_outputs);
   return ret;
 }

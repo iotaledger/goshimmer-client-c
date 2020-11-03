@@ -111,7 +111,8 @@ void unspent_outputs_print(unspent_outputs_t **t) {
   printf("unspent_outputs: [\n===\n");
   HASH_ITER(hh, *t, elm, tmp) {
     address_2_base58(elm->addr, addr_str);
-    printf("address[%" PRIu64 "]: %s %s\n", elm->addr_index, addr_str, elm->spent ? "[spent]" : "");
+    printf("address: %s %s\n", addr_str, elm->spent ? "[spent]" : "");
+    // printf("address[%" PRIu64 "]: %s %s\n", elm->addr_index, addr_str, elm->spent ? "[spent]" : "");
     output_ids_t *id_elm, *id_tmp;
     HASH_ITER(hh, elm->ids, id_elm, id_tmp) {
       memcpy(output_id, elm->addr, TANGLE_ADDRESS_BYTES);
